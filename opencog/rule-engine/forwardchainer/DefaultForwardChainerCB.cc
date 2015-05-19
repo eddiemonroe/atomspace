@@ -28,6 +28,8 @@
 #include "DefaultForwardChainerCB.h"
 #include "../URECommons.h"
 
+#include <opencog/util/Logger.h>
+
 using namespace opencog;
 
 DefaultForwardChainerCB::DefaultForwardChainerCB(
@@ -38,6 +40,9 @@ DefaultForwardChainerCB::DefaultForwardChainerCB(
     fcim_ = new ForwardChainInputMatchCB(as);
     fcpm_ = new ForwardChainPatternMatchCB(as);
     ts_mode_ = ts_mode;
+
+
+//    _log = opencog::Logger("forward_chainer.log", Logger::FINE, true);
 }
 
 DefaultForwardChainerCB::~DefaultForwardChainerCB()
@@ -71,6 +76,11 @@ vector<Rule*> DefaultForwardChainerCB::choose_rules(FCMemory& fcmem)
             rule_atomspace.addAtom(r->get_handle());
         }
 
+        _log.debug("All rules:");
+        for (Rule* r: rules) {
+            _log.debug(r->get_name());
+        }
+
         // Create bindlink with source as an implicant.
         URECommons urec(&rule_atomspace);
         Handle copy = urec.replace_nodes_with_varnode(source_cpy, NODE);
@@ -85,7 +95,7 @@ vector<Rule*> DefaultForwardChainerCB::choose_rules(FCMemory& fcmem)
         // Get matched bindLinks.
         HandleSeq matches = imp.result_list;
         if (matches.empty()) {
-            logger().debug(
+            _log.debug(
                     "No matching BindLink was found. Returning empty vector");
             return vector<Rule*> { };
         }
@@ -103,8 +113,18 @@ vector<Rule*> DefaultForwardChainerCB::choose_rules(FCMemory& fcmem)
         }
     } else {
         // Try to find specialized rules that contain the source node.
+        _log.debug("source is not a link. Try to find specialized rules that contain the source node.");
         OC_ASSERT(NodeCast(source) != nullptr);
         chosen_bindlinks = get_rootlinks(source, as_, BIND_LINK);
+    }
+
+    _log.debug("chosen_bindlinks:");
+    //sleep(1);
+
+    for (auto bl : chosen_bindlinks) {
+        _log.debug(bl->toString());
+        //sleep(1);
+
     }
 
     // Find the rules containing the bindLink in copied_back.
@@ -166,17 +186,31 @@ HandleSeq DefaultForwardChainerCB::choose_premises(FCMemory& fcmem)
     UnorderedHandleSet neighbors = get_distant_neighbors(hsource, 2);
 
     // Add all root links of atoms in @param neighbors.
+    //sleep(1);
+
+    _log.debug("Neighbors (2 steps):");
+
     for (auto hn : neighbors) {
         if (hn->getType() != VARIABLE_NODE) {
+            _log.fine(hn->toString());
+            ////sleep(1);
+
             HandleSeq roots;
             urec.get_root_links(hn, roots);
+            _log.debug("----------------- \nRoots:");
+            ////sleep(1);
+
             for (auto r : roots) {
+                _log.fine(r->toString("rootroot--> "));
+                //sleep(1);
                 if (find(inputs.begin(), inputs.end(), r) == inputs.end() and r->getType()
                         != BIND_LINK)
                     inputs.push_back(r);
             }
+            _log.debug("-----------------");
         }
     }
+
 
     return inputs;
 }
@@ -258,4 +292,8 @@ HandleSeq DefaultForwardChainerCB::apply_rule(FCMemory& fcmem)
     }
 
     return new_product;
+}
+
+void DefaultForwardChainerCB::set_logger(Logger l) {
+    _log = l;
 }

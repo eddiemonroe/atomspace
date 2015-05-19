@@ -41,9 +41,13 @@ private:
 
 	Handle do_forward_chaining(Handle h,
 		const std::string& conf_path = default_cpolicy_path);
-	/**
-	 * @return a handle to a ListLink  of ListLinks holding a variable followed by all grounding nodes.
-	 */
+	Handle do_forward_chaining_em(Handle source,
+		const std::string& conf_path);
+	Handle do_forward_chaining_em_default_control(Handle source);
+
+		/**
+         * @return a handle to a ListLink  of ListLinks holding a variable followed by all grounding nodes.
+         */
 	Handle do_backward_chaining(Handle h);
 public:
 	InferenceSCM();

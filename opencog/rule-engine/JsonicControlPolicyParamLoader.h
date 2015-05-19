@@ -49,6 +49,7 @@ public:
     int get_max_iter();
     bool get_attention_alloc();
     vector<Rule*>& get_rules();
+    string get_log_level();
 
 private:
     Rule* cur_read_rule_;

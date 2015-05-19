@@ -35,6 +35,41 @@ URECommons::URECommons(AtomSpace * as) :
 URECommons::~URECommons() {
 }
 
+Handle URECommons::create_bindlink_from_implicationlink(Handle himplication, bool vnode_is_typedv)
+throw (opencog::InvalidParamException) {
+	if (!LinkCast(himplication)) {
+		throw InvalidParamException(TRACE_INFO, "Input must be a link type ");
+	} //xxx why?
+
+	//if(vnode_is_typedv)
+//	himplication = replace_nodes_with_varnode(himplication);
+
+	UnorderedHandleSet variable_nodes = get_outgoing_nodes(himplication, {
+			VARIABLE_NODE });
+	HandleSeq list_link_elem;
+
+	// For searching ImplicationLinks with variables.
+	if (vnode_is_typedv) {
+		Handle h = as_->addNode(TYPE_NODE, "VariableNode");
+		for (Handle hvn : variable_nodes) {
+			Handle hi = as_->addLink(TYPED_VARIABLE_LINK, hvn, h);
+			list_link_elem.push_back(hi);
+		}
+	} else
+		list_link_elem.insert(list_link_elem.end(), variable_nodes.begin(),
+							  variable_nodes.end());
+
+	Handle var_listLink = as_->addLink(VARIABLE_LIST, list_link_elem);
+
+	Handle implicationLink = as_->addLink(IMPLICATION_LINK, himplication);
+
+	//Handle thebindlink = as_->addLink(BIND_LINK, var_listLink, implicationLink);
+	Handle thebindlink = as_->addLink(BIND_LINK, var_listLink, himplication);
+	printf("create_bind_link\nsource:\n%s\n", himplication->toShortString().c_str());
+	printf("bindlink:\n%s\n",thebindlink->toShortString().c_str());
+	return thebindlink;
+}
+
 Handle URECommons::create_bindLink(Handle himplicant, bool vnode_is_typedv)
 		throw (opencog::InvalidParamException) {
 	if (!LinkCast(himplicant)) {
@@ -64,7 +99,10 @@ Handle URECommons::create_bindLink(Handle himplicant, bool vnode_is_typedv)
 	Handle implicationLink = as_->addLink(IMPLICATION_LINK, himplicant,
 			himplicant);
 
-	return as_->addLink(BIND_LINK, var_listLink, implicationLink);
+	Handle thebindlink = as_->addLink(BIND_LINK, var_listLink, implicationLink);
+    printf("create_bind_link\nsource:\n%s\n",himplicant->toString().c_str());
+    printf("bindlink:\n%s\n",thebindlink->toString().c_str());
+    return thebindlink;
 }
 
 Handle URECommons::replace_nodes_with_varnode(Handle& handle,

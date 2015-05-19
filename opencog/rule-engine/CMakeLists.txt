@@ -15,6 +15,9 @@ ADD_LIBRARY(ruleengine SHARED
 	InferenceSCM.cc
 	Rule.cc
 	JsonicControlPolicyParamLoader.cc
+        forwardchainer/EMForwardChainer.cc 
+        forwardchainer/EMForwardChainerCB.cc 
+        forwardchainer/EMForwardChainerCallBackBase.h
 )
 
 ADD_DEPENDENCIES(ruleengine

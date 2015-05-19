@@ -31,6 +31,9 @@
 #include <opencog/rule-engine/backwardchainer/BackwardChainer.h>
 #include <opencog/atomspace/AtomSpace.h>
 
+#include <opencog/rule-engine/forwardchainer/EMForwardChainer.h>
+#include <opencog/rule-engine/forwardchainer/EMForwardChainerCB.h>
+
 using namespace opencog;
 
 InferenceSCM::InferenceSCM()
@@ -77,6 +80,10 @@ void InferenceSCM::init(void)
                             this, "rule-engine");
     define_scheme_primitive("cog-bc", &InferenceSCM::do_backward_chaining,
                             this, "rule-engine");
+    define_scheme_primitive("cog-fc-em",&InferenceSCM::do_forward_chaining_em,
+                            this, "rule-engine");
+    define_scheme_primitive("cog-fc-em2",&InferenceSCM::do_forward_chaining_em_default_control,
+                            this, "rule-engine");
 #endif
 }
 
@@ -104,6 +111,48 @@ Handle InferenceSCM::do_forward_chaining(Handle h, const string& conf_path)
          *  trying to generate inferences associated only with the conceptNode Human.
          */
         fc.do_chain(dfc, h);
+
+    HandleSeq result = fc.get_chaining_result();
+    return as->addLink(LIST_LINK, result);
+#else
+    return Handle::UNDEFINED;
+#endif
+}
+
+Handle InferenceSCM::do_forward_chaining_em_default_control(Handle source) {
+    return do_forward_chaining_em(source,NULL);
+}
+
+
+Handle InferenceSCM::do_forward_chaining_em(Handle source, const string& conf_path)
+{
+#ifdef HAVE_GUILE
+    //printf("InferenceSCM::do_forward_chaining_em\n");
+    AtomSpace *as = SchemeSmob::ss_get_env_as("cog-fc-em");
+    //printf("create forward chainer\n");
+    EMForwardChainer fc(as);
+    //printf("create fc callback\n");
+    EMForwardChainerCB fccb(&fc);
+
+    /**
+     * Parse (cog-fc ListLink()) as forward chaining with Handle::UNDEFINED which  does
+     * pattern matching on the atomspace using the rules declared in the config.A similar
+     * functionality with the python version of the  forward chainer.
+     */
+    // ??? so if the source is a listlink and there's nothing pointing to it, then don't use it?
+    //re and as->getIncoming(h).empty(): hmmmm.. what if list happens to be used somewhere else in the atomspace
+//    if (h->getType() == LIST_LINK and as->getIncoming(h).empty())
+//        fc.do_chain(fccb, Handle::UNDEFINED);
+//    else
+        /** Does variable fulfillment forward chaining or forward chaining based on
+         *  target node @param h.
+         *  example (cog-fc (InheritanceLink (VariableNode "$X") (ConceptNode "Human")))
+         *  finds all the matches for $X by first finding matching rules and then applying
+         *  all of them using the pattern matcher.
+         *  and (cog-fc (ConceptNode "Human")) will start forward chaining on the concept Human
+         *  trying to generate inferences associated only with the conceptNode Human.
+         */
+        fc.do_chain(source,&fccb);
 
     HandleSeq result = fc.get_chaining_result();
     return as->addLink(LIST_LINK, result);

@@ -54,6 +54,10 @@ public:
 	Handle create_bindLink(Handle himplicant, bool is_quoted = false)
 			throw (opencog::InvalidParamException);
 
+
+	Handle create_bindlink_from_implicationlink(Handle himplication, bool vnode_is_typedv = false)
+			throw (opencog::InvalidParamException);
+
 	/**
 	 * checks if a handle already exists in a HandleSeq
 	 */

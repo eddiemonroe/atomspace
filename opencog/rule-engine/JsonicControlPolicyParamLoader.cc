@@ -93,6 +93,17 @@ int JsonicControlPolicyParamLoader::get_max_iter()
 }
 
 /**
+ * Get the log level value set in the .json
+ *
+ * @return the log level
+ */
+string JsonicControlPolicyParamLoader::get_log_level()
+{
+    return log_level_;
+}
+
+
+/**
  * Get all rules defined in the control policy config.
  *
  * @return a vector of Rule*
@@ -268,6 +279,8 @@ Rule* JsonicControlPolicyParamLoader::get_rule(const string& name)
     }
     return nullptr;
 }
+
+
 
 /**
  * Resolve which search path actually contain the file.

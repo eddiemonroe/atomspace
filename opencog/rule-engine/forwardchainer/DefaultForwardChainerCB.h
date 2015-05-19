@@ -41,10 +41,12 @@ private:
     HandleSeq get_rootlinks(Handle hsource, AtomSpace* as, Type link_type,
     bool subclasses = false);
     source_selection_mode ts_mode_;
+    opencog::Logger _log;
 public:
     DefaultForwardChainerCB(AtomSpace* as, source_selection_mode ts_mode =
             TV_FITNESS_BASED);
     virtual ~DefaultForwardChainerCB();
+    void set_logger(Logger h);
 
     //callbacks
     virtual vector<Rule*> choose_rules(FCMemory& fcmem);

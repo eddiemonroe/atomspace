@@ -21,32 +21,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef FORWARDCHAINERCALLBACK_H_
-#define FORWARDCHAINERCALLBACK_H_
+#ifndef EMFORWARDCHAINERCALLBACKBASE_H_
+#define EMFORWARDCHAINERCALLBACKBASE_H_
 
 #include <opencog/atomspace/AtomSpace.h>
 #include <opencog/atomspace/Handle.h>
 
+#include "EMForwardChainer.h"
+//#include "EMForwardChainerCB.h"
+
 namespace opencog {
 
-enum source_selection_mode {
-    TV_FITNESS_BASED, STI_BASED
+enum em_source_selection_mode {
+    EM_TV_FITNESS_BASED, EM_STI_BASED
 };
 
 class Rule;
-class FCMemory;
-class ForwardChainerCallBack
-{
-private:
-    AtomSpace* as_;
-public:
-    ForwardChainerCallBack(AtomSpace* as) :
-            as_(as)
-    {
-    }
+//class FCMemory;
+class EMForwardChainer;
 
-    ForwardChainerCallBack() {}
-    virtual ~ForwardChainerCallBack()
+class EMForwardChainerCallBackBase {
+private:
+    AtomSpace* as;
+public:
+    //EMForwardChainerCallBackBase(EMForwardChainerCB* fc) {}
+
+    EMForwardChainerCallBackBase() {}
+    virtual ~EMForwardChainerCallBackBase()
     {
     }
     /**
@@ -56,7 +57,7 @@ public:
      * ation of the forward chaining instance.
      * @return a set of applicable rules
      */
-    virtual std::vector<Rule*> choose_rules(FCMemory& fcmem) = 0;
+    virtual std::vector<Rule*> choose_rules(Handle source) = 0;
     /**
      * Choose additional premises for the rule.
      * @fcmem an object holding the current source/target and other inform
@@ -64,20 +65,24 @@ public:
      * @return a set of Handles chosen as a result of applying fitness
      * criteria with respect to the current source.
      */
-    virtual HandleSeq choose_premises(FCMemory& fcmem) = 0;
+//    virtual HandleSeq choose_premises() = 0;
     /**
      * choose next source from the source list
      * @return a handle to the chosen source from source list
      */
-    virtual Handle choose_next_source(FCMemory& fcmem) = 0;
+    virtual Handle choose_source() = 0;
     /**
      * apply chosen rule. the default will wrap a custom PM callback class.
      * i.e invokes _pattern_matcher.
      * @return a set of handles created as a result of applying current choosen rule
      */
-    virtual HandleSeq apply_rule(FCMemory& fcmem) = 0;
+    virtual HandleSeq apply_rule(Rule& rule) = 0;
+//    virtual UnorderedHandleSet apply_rules(vector<Rule*> rules) = 0;
+
+
+    virtual void set_forwardchainer(EMForwardChainer* fc) = 0;
 };
 
 } // ~namespace opencog
 
-#endif /* FORWARDCHAINERCALLBACK_H_ */
+#endif /* EMFORWARDCHAINERCALLBACKBASE_H_ */

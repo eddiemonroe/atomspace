@@ -41,16 +41,19 @@ ForwardChainer::~ForwardChainer() {
 	delete _cpolicy_loader;
 }
 
-void ForwardChainer::init() {
-	_cpolicy_loader = new JsonicControlPolicyParamLoader(_as, _conf_path);
-	_cpolicy_loader->load_config();
-	_fcmem.set_search_in_af(_cpolicy_loader->get_attention_alloc());
-	_fcmem.set_rules(_cpolicy_loader->get_rules());
-	_fcmem.set_cur_rule(nullptr);
+void ForwardChainer::init()
+{
+    _cpolicy_loader = new JsonicControlPolicyParamLoader(_as, _conf_path);
+    _cpolicy_loader->load_config();
+    _fcmem.set_search_in_af(_cpolicy_loader->get_attention_alloc());
+    _fcmem.set_rules(_cpolicy_loader->get_rules());
+    _fcmem.set_cur_rule(nullptr);
 
-	// Provide a logger
-	_log = NULL;
-	setLogger(new opencog::Logger("forward_chainer.log", Logger::FINE, true));
+    // Provide a logger
+    _log = NULL;
+    string log_level_ = _cpolicy_loader->get_log_level();
+    setLogger(new opencog::Logger("forward_chainer.log", Logger::getLevelFromString(log_level_), true));
+    _log->info("Log level set to " + log_level_);
 }
 
 void ForwardChainer::setLogger(Logger* log) {

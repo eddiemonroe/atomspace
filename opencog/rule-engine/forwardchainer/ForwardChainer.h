@@ -44,7 +44,7 @@ private:
 
     JsonicControlPolicyParamLoader* _cpolicy_loader;
 
-	string _conf_path;
+    string _conf_path = "../opencog/reasoning/bio_cpolicy.json";
 
     FCMemory _fcmem; //Stores history
     Logger * _log;
