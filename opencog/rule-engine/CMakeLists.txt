@@ -18,6 +18,7 @@ ADD_LIBRARY(ruleengine SHARED
         forwardchainer/EMForwardChainer.cc 
         forwardchainer/EMForwardChainerCB.cc 
         forwardchainer/EMForwardChainerCallBackBase.h
+    UREConfigReader.cc
 )
 
 ADD_DEPENDENCIES(ruleengine
