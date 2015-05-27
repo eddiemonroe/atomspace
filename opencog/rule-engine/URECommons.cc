@@ -65,8 +65,8 @@ throw (opencog::InvalidParamException) {
 
 	//Handle thebindlink = as_->addLink(BIND_LINK, var_listLink, implicationLink);
 	Handle thebindlink = as_->addLink(BIND_LINK, var_listLink, himplication);
-	printf("create_bind_link\nsource:\n%s\n", himplication->toShortString().c_str());
-	printf("bindlink:\n%s\n",thebindlink->toShortString().c_str());
+//	printf("create_bind_link\nsource:\n%s\n", himplication->toShortString().c_str());
+//	printf("bindlink:\n%s\n",thebindlink->toShortString().c_str());
 	return thebindlink;
 }
 

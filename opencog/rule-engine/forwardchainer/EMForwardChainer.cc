@@ -74,7 +74,7 @@ void EMForwardChainer::do_chain(Handle original_source,
     logger.debug("Entering EMForwardChainer::do_chain\n");
     if (original_source==Handle::UNDEFINED) {
         //do_pm();
-        logger.info("Initial source sent to do_chain() us empty. Handling of this not implemented yet.");
+        logger.info("Initial source sent to do_chain() is empty. Handling of this not implemented yet.");
         return;
     }
 
@@ -95,8 +95,8 @@ void EMForwardChainer::do_chain(Handle original_source,
     //_fcmem.set_source(original_source); //set initial source
     potential_sources.insert(original_source);
 
-    logger.info("max_iter: %i", max_iter);
-    logger.info("Original source:\n" + original_source->toShortString());
+    logger.debug("max_iter: %i", max_iter);
+    logger.debug("Original source:\n" + original_source->toShortString());
 
     //current_source = original_source;
 
@@ -127,7 +127,7 @@ void EMForwardChainer::do_chain(Handle original_source,
  */
 bool EMForwardChainer::step()
 {
-    logger.debug("EMFowardChainer::step()");
+    logger.fine("EMFowardChainer::step()");
 
 //    if (_fcmem.get_cur_source() == Handle::UNDEFINED) {
 //        _log->info(
@@ -145,12 +145,12 @@ bool EMForwardChainer::step()
 
     current_source = original_source;
 
-    logger.info("[ForwardChainer] Current source:\n %s",
+    logger.fine("[ForwardChainer] Current source:\n %s",
                current_source->toShortString().c_str());
 
     //let's start with just iterating through all the rules
     vector<Rule*> chosen_rules = fccb->choose_rules(current_source);
-    logger.debug("%i rules chosen for source", chosen_rules.size());
+    logger.fine("%i rules chosen for source", chosen_rules.size());
 
     //for now we are just handling case of source being a single node
     if (!NodeCast(current_source)) {
@@ -160,7 +160,8 @@ bool EMForwardChainer::step()
 
     for (Rule* rule : chosen_rules) {
         // I think below will go into EMForwardChainerCB::apply_rule()
-        logger.debug("Current rule:\n%s",rule->get_handle()->toShortString().c_str());
+        logger.debug("Current rule:%s",rule->get_name().c_str());
+        logger.fine(rule->get_handle()->toShortString().c_str());
 
         Handle var_list = rule->get_vardecl();
 
@@ -168,30 +169,44 @@ bool EMForwardChainer::step()
 
         //for now we are just handling case of source being a single node
         //for each variablenode, substitute the source, and then do unification
+        // TODO: need to handle typed variables
         for (Handle var :  LinkCast(var_list)->getOutgoingSet()) {
+            logger.debug("rule variable: \n%s",var->toShortString().c_str());
+
+            // Could handle special case here for abduction (and probably others) to only substitute
+            // for one of Variable A or Variable B, since they are equivalent. Oh wait, that's
+            // probably not true because the resulting Inheritance could go both ways.
+            // Though are AndLinks ordered? I noticed in the order for the abduction implicant
+            // AndLink was reversed from the rule in scheme file definition in debug output.
+
             map<Handle,Handle> replacement_map = map<Handle,Handle>();
             replacement_map[var] = current_source;
+            //this is actually the grounded implication part of the rule (w/out the variables)
+            //had problems gou
             Handle grounded_rule = ure_commons.change_node_types(implication_link,replacement_map);
 //            Handle rule_handle = rule->get_handle();
 //            Handle grounded_rule = ure_commons.change_node_types(rule_handle,replacement_map);
             //need to remove the source from the variable list
 
-            logger.debug("rule variable: \n%s\n\ngrounded rule:\n%s",var->toShortString().c_str(),
-                grounded_rule->toShortString().c_str());
+            //grounded implication:  grounded_rule->toShortString().c_str()
 
             Handle hbindlink = ure_commons.create_bindlink_from_implicationlink(grounded_rule);
-            BindLinkPtr bindlink(BindLinkCast(hbindlink));
+            BindLinkPtr pln_bindlink(BindLinkCast(hbindlink));
 //            BindLinkPtr bindlink(BindLinkCast(grounded_rule));
-            logger.debug("The bind link for implication:\n%s",bindlink->toShortString().c_str());
+            logger.fine("The grounded bindlink:\n%s",bindlink->toShortString().c_str());
             DefaultImplicator implicator(as);
             implicator.implicand = bindlink->get_implicand();
             bindlink->imply(implicator);
 
-            vector<Handle> conclutions = implicator.result_list;
-            logger.debug("Conclusions:");
+            vector<Handle> concl = implicator.result_list;
+            set<Handle> conclutions(concl.begin(), concl.end());
+            string conclStr = "Conclusions:\n";
+            //logger.debug("Conclusions:");
             for (auto conclusion : conclutions) {
-                logger.debug(conclusion->toShortString().c_str());
+                //logger.debug(conclusion->toShortString().c_str());
+                conclStr = conclStr + "\n" + conclusion->toShortString().c_str();
             }
+            logger.debug(conclStr);
         }
 
     }

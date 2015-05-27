@@ -317,6 +317,7 @@ bool PatternMatch::recursive_virtual(PatternMatchCallback& cb,
  */
 bool BindLink::imply(PatternMatchCallback& pmc, bool check_conn)
 {
+   printf("_virtual.size(): %lu       _components.size(): %lu\n\n",_virtual.size(),_components.size());
    if (check_conn and 0 == _virtual.size() and 1 < _components.size())
 		throw InvalidParamException(TRACE_INFO,
 			"BindLink consists of multiple disconnected components!");
