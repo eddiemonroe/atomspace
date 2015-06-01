@@ -6,7 +6,11 @@ INSTALL (FILES
 	EMForwardChainerCB.h
 	EMForwardChainer.h
 	EMForwardChainerCallBackBase.h
+
 	ForwardChainInputMatchCB.h
 	ForwardChainPatternMatchCB.h
+
+	ForwardChainerPMCB.h
+
 	DESTINATION "include/${PROJECT_NAME}/rule-engine/forwardchainer"
 )

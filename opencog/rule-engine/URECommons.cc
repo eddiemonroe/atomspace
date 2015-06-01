@@ -103,6 +103,8 @@ Handle URECommons::create_bindLink(Handle himplicant, bool vnode_is_typedv)
     printf("create_bind_link\nsource:\n%s\n",himplicant->toString().c_str());
     printf("bindlink:\n%s\n",thebindlink->toString().c_str());
     return thebindlink;
+
+	return as_->addLink(BIND_LINK, var_listLink, himplicant, himplicant);
 }
 
 Handle URECommons::replace_nodes_with_varnode(Handle& handle,

@@ -72,17 +72,8 @@ class PatternUTest: public CxxTest::TestSuite
 
 		PatternUTest(void)
 		{
-			try
-			{
-				config().load("opencog-test.conf");
-			}
-			catch (RuntimeException &e)
-			{
-				std::cerr << e.getMessage() << std::endl;
-			}
-			logger().setFilename(config()["LOG_FILE"]);
-			logger().setLevel(Logger::getLevelFromString(config()["LOG_LEVEL"]));
-			logger().setPrintToStdoutFlag(config().get_bool("LOG_TO_STDOUT"));
+			logger().setLevel(Logger::DEBUG);
+			logger().setPrintToStdoutFlag(true);
 			as = new AtomSpace();
 		}
 
@@ -442,12 +433,10 @@ void PatternUTest::test_implication(void)
 	Handle h2 = as->addNode(VARIABLE_NODE, "concept variable");
 
 	Handle hpa = as->addLink(PARSE_LINK, h2);
-	Handle him = as->addLink(IMPLICATION_LINK, han, hpa);
 
-	imply(as, him);
+	imply(as, han, hpa);
 
 	// Remove the parse link, so that the other one is easier to find.
-	as->removeAtom(him);
 	as->removeAtom(hpa);
 
 	// At this point, the AtomSpace should contain a structure
