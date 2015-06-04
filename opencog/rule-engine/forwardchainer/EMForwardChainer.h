@@ -37,6 +37,8 @@ private:
 
     EMForwardChainerCallBackBase *fccb, *default_fccb;
 
+    set<Handle> conclusions;
+
 
     bool step();
 
@@ -66,7 +68,7 @@ public:
     EMForwardChainer(AtomSpace* as, string conf_path=DEFAULT_CONFIG_PATH);
     virtual ~EMForwardChainer();
 
-    void do_chain(Handle original_source=Handle::UNDEFINED,
+    set<Handle> do_chain(Handle original_source=Handle::UNDEFINED,
                   EMForwardChainerCallBackBase* new_fccb=NULL);
 
     HandleSeq get_chaining_result(void);

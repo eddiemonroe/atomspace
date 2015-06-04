@@ -1,7 +1,9 @@
 #include <opencog/atomutils/AtomUtils.h>
 #include <opencog/atoms/bind/BindLink.h>
-#include "EMForwardChainerCB.h"
+#include <opencog/query/BindLinkAPI.h>
 
+#include <opencog/query/DefaultImplicator.h>
+#include "EMForwardChainerCB.h"
 #include "EMForwardChainer.h"
 
 
@@ -67,15 +69,17 @@ Logger EMForwardChainer::getLogger()
 }
 
 
-void EMForwardChainer::do_chain(Handle original_source,
+set<Handle> EMForwardChainer::do_chain(Handle original_source,
                                 EMForwardChainerCallBackBase* new_fccb)
 {
-    this->original_source = original_source;
     logger.debug("Entering EMForwardChainer::do_chain\n");
+    conclusions.empty();
+
+    this->original_source = original_source;
     if (original_source==Handle::UNDEFINED) {
         //do_pm();
         logger.info("Initial source sent to do_chain() is empty. Handling of this not implemented yet.");
-        return;
+        return conclusions;
     }
 
     if (new_fccb) {
@@ -115,6 +119,8 @@ void EMForwardChainer::do_chain(Handle original_source,
     }
 
     logger.info("[ForwardChainer] finished do_chain.");
+
+    return conclusions;
 }
 
 
@@ -160,18 +166,23 @@ bool EMForwardChainer::step()
 
     for (Rule* rule : chosen_rules) {
         // I think below will go into EMForwardChainerCB::apply_rule()
-        logger.debug("Current rule:%s",rule->get_name().c_str());
+        logger.debug("Current rule: %s",rule->get_name().c_str());
         logger.fine(rule->get_handle()->toShortString().c_str());
 
-        Handle var_list = rule->get_vardecl();
-
-        Handle implication_link = LinkCast(rule->get_handle())->getOutgoingSet()[1];
-
+        Handle var_listlink = rule->get_vardecl();
+        HandleSeq var_seq = LinkCast(var_listlink)->getOutgoingSet();
+            
+        //BindLink no longer contains an implication link 
+        // Handle implication_link = LinkCast(rule->get_handle())->getOutgoingSet()[1];
+        // Handle implicator_link = LinkCase(rule->get_handle())->getOutgoingSet()[1]
+        Handle implicant = rule->get_implicant();
+        Handle implicand = rule->get_implicand();
+            
         //for now we are just handling case of source being a single node
         //for each variablenode, substitute the source, and then do unification
         // TODO: need to handle typed variables
-        for (Handle var :  LinkCast(var_list)->getOutgoingSet()) {
-            logger.debug("rule variable: \n%s",var->toShortString().c_str());
+        for (Handle current_varnode :  LinkCast(var_listlink)->getOutgoingSet()) {
+            logger.debug("ground rule variable: \n%s",current_varnode->toShortString().c_str());
 
             // Could handle special case here for abduction (and probably others) to only substitute
             // for one of Variable A or Variable B, since they are equivalent. Oh wait, that's
@@ -180,37 +191,62 @@ bool EMForwardChainer::step()
             // AndLink was reversed from the rule in scheme file definition in debug output.
 
             map<Handle,Handle> replacement_map = map<Handle,Handle>();
-            replacement_map[var] = current_source;
+            replacement_map[current_varnode] = current_source;
             //this is actually the grounded implication part of the rule (w/out the variables)
             //had problems gou
-            Handle grounded_rule = ure_commons.change_node_types(implication_link,replacement_map);
+            // Handle grounded_rule = ure_commons.change_node_types(implication_link,replacement_map);
+            Handle grounded_implicant = ure_commons.change_node_types(implicant,replacement_map);
+            Handle grounded_implicand = ure_commons.change_node_types(implicand,replacement_map);
 //            Handle rule_handle = rule->get_handle();
 //            Handle grounded_rule = ure_commons.change_node_types(rule_handle,replacement_map);
+
             //need to remove the source from the variable list
+             HandleSeq vars;
+             for (auto varnode : var_seq) {
+                 if (varnode != current_varnode) {
+                     vars.push_back(varnode);
+                 }
+             }
+            Handle varlist = Handle(createVariableList(vars));
 
-            //grounded implication:  grounded_rule->toShortString().c_str()
+            HandleSeq bl_contents = {varlist,grounded_implicant,grounded_implicand};
 
-            Handle hbindlink = ure_commons.create_bindlink_from_implicationlink(grounded_rule);
-            BindLinkPtr pln_bindlink(BindLinkCast(hbindlink));
+//            Handle hbindlink = ure_commons.create_bindlink_from_implicationlink(grounded_rule);
+            //BindLink bl(bl_contents);
+            BindLinkPtr bl_p = createBindLink(bl_contents);
+            //Handle bl_h = Handle(*LinkCast(bl));
+            Handle bl_h = Handle(bl_p);
+
+            logger.fine("The grounded bindlink:\n%s",bl_h->toShortString().c_str());
+
+
+            //BindLinkPtr pln_bindlink(BindLinkCast(hbindlink));
+
+            //TODO: should use pln_bindlink, but it's not working (returns empty set)
+            HandleSeq rule_conclusions = LinkCast(bindlink(as,bl_h))->getOutgoingSet();
+
+
 //            BindLinkPtr bindlink(BindLinkCast(grounded_rule));
-            logger.fine("The grounded bindlink:\n%s",bindlink->toShortString().c_str());
-            DefaultImplicator implicator(as);
-            implicator.implicand = bindlink->get_implicand();
-            bindlink->imply(implicator);
-
-            vector<Handle> concl = implicator.result_list;
-            set<Handle> conclutions(concl.begin(), concl.end());
+//            logger.fine("The grounded bindlink:\n%s",pln_bindlink->toShortString().c_str());
+//            DefaultImplicator implicator(as);
+//            implicator.implicand = pln_bindlink->get_implicand();
+//            pln_bindlink->imply(implicator);
+//
+//            vector<Handle> concl = implicator.result_list;
+//            set<Handle> conclutions(concl.begin(), concl.end());
             string conclStr = "Conclusions:\n";
             //logger.debug("Conclusions:");
-            for (auto conclusion : conclutions) {
+            for (auto conclusion : rule_conclusions) {
                 //logger.debug(conclusion->toShortString().c_str());
                 conclStr = conclStr + "\n" + conclusion->toShortString().c_str();
             }
             logger.debug(conclStr);
+
+            //add the particular rule's conclusions to the full list of conclusions
+            std::copy(rule_conclusions.begin(), rule_conclusions.end(), std::inserter(conclusions,conclusions.end()));
         }
 
     }
-
 
 
 //    set<Rule*> chosen_rules = choose_rules();
@@ -316,6 +352,10 @@ Handle EMForwardChainer::choose_source() {
 
 HandleSeq EMForwardChainer::get_chaining_result() {
     HandleSeq result;
+
+    for (auto h : conclusions) {
+        result.push_back(h);
+    }
 
     return result;
 //    HandleSeq FCMemory::get_result()

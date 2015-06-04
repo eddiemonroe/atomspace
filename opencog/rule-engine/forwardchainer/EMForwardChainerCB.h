@@ -6,8 +6,8 @@
 #define OPENCOG_EMFORWARDCHAINERCB_H
 
 #include "EMForwardChainerCallBackBase.h"
-#include "ForwardChainInputMatchCB.h"
-#include "ForwardChainPatternMatchCB.h"
+//#include "ForwardChainInputMatchCB.h"
+//#include "ForwardChainPatternMatchCB.h"
 
 #include "EMForwardChainer.h"
 
@@ -21,8 +21,8 @@ class EMForwardChainerCB: public virtual EMForwardChainerCallBackBase
 private:
     EMForwardChainer* fc;
     AtomSpace * as;
-    ForwardChainInputMatchCB* fcim_;
-    ForwardChainPatternMatchCB* fcpm_;
+    //ForwardChainInputMatchCB* fcim_;
+    //ForwardChainPatternMatchCB* fcpm_;
     HandleSeq get_rootlinks(Handle hsource, AtomSpace* as, Type link_type,
                             bool subclasses = false);
     em_source_selection_mode ts_mode;

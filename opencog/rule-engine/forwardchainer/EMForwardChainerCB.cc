@@ -1,6 +1,7 @@
 #include <opencog/rule-engine/Rule.h>
 #include <opencog/atoms/bind/BindLink.h>
 
+#include <opencog/query/DefaultImplicator.h>
 #include "EMForwardChainerCB.h"
 
 using namespace opencog;
