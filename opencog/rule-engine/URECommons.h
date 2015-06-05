@@ -78,6 +78,7 @@ public:
 	 * create a copy of the handle with a different variable name passed in @param var_uniq_var map input
 	 */
 	Handle change_node_types(Handle& h, map<Handle, Handle>& replacement_map);
+	Handle change_node_types_em(Handle& h, map<Handle, Handle>& replacement_map);
 
 	/**
 	 * Get top level parent of the handle

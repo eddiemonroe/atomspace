@@ -72,6 +72,7 @@ Logger EMForwardChainer::getLogger()
 set<Handle> EMForwardChainer::do_chain(Handle original_source,
                                 EMForwardChainerCallBackBase* new_fccb)
 {
+    logger.debug("\n\n\n");
     logger.debug("Entering EMForwardChainer::do_chain\n");
     conclusions.empty();
 
@@ -118,7 +119,7 @@ set<Handle> EMForwardChainer::do_chain(Handle original_source,
         iteration++;
     }
 
-    logger.info("[ForwardChainer] finished do_chain.");
+    logger.info("[ForwardChainer] finished do_chain.\n=======================================");
 
     return conclusions;
 }
@@ -166,6 +167,7 @@ bool EMForwardChainer::step()
 
     for (Rule* rule : chosen_rules) {
         // I think below will go into EMForwardChainerCB::apply_rule()
+        logger.debug("============================================================================");
         logger.debug("Current rule: %s",rule->get_name().c_str());
         logger.fine(rule->get_handle()->toShortString().c_str());
 
@@ -182,7 +184,7 @@ bool EMForwardChainer::step()
         //for each variablenode, substitute the source, and then do unification
         // TODO: need to handle typed variables
         for (Handle current_varnode :  LinkCast(var_listlink)->getOutgoingSet()) {
-            logger.debug("ground rule variable: \n%s",current_varnode->toShortString().c_str());
+            logger.debug("ground rule variable: %s",current_varnode->toShortString().c_str());
 
             // Could handle special case here for abduction (and probably others) to only substitute
             // for one of Variable A or Variable B, since they are equivalent. Oh wait, that's
@@ -234,16 +236,23 @@ bool EMForwardChainer::step()
 //
 //            vector<Handle> concl = implicator.result_list;
 //            set<Handle> conclutions(concl.begin(), concl.end());
-            string conclStr = "Conclusions:\n";
-            //logger.debug("Conclusions:");
-            for (auto conclusion : rule_conclusions) {
-                //logger.debug(conclusion->toShortString().c_str());
-                conclStr = conclStr + "\n" + conclusion->toShortString().c_str();
-            }
-            logger.debug(conclStr);
+            logger.debug("----------------------------------------------");
+            if (rule_conclusions.size() > 0) {
+                string conclStr = string(NodeCast(current_varnode)->getName().c_str()) + " Conclusions:\n";
+                //logger.debug("Conclusions:");
+                for (auto conclusion : rule_conclusions) {
+                    //logger.debug(conclusion->toShortString().c_str());
+                    conclStr = conclStr + "\n" + conclusion->toShortString().c_str();
+                }
+                logger.debug(conclStr);
 
-            //add the particular rule's conclusions to the full list of conclusions
-            std::copy(rule_conclusions.begin(), rule_conclusions.end(), std::inserter(conclusions,conclusions.end()));
+                //add the particular rule's conclusions to the full list of conclusions
+                std::copy(rule_conclusions.begin(), rule_conclusions.end(),
+                          std::inserter(conclusions, conclusions.end()));
+            }
+            else {
+                logger.debug("%s Conclusions: None",NodeCast(current_varnode)->getName().c_str());
+            }
         }
 
     }

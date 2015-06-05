@@ -39,8 +39,7 @@ private:
 
 	
 // Eddie version
-	Handle do_forward_chaining(Handle h,
-		const std::string& conf_path = default_cpolicy_path);
+
 	Handle do_forward_chaining_em(Handle source,
 		const std::string& conf_path);
 	Handle do_forward_chaining_em_default_control(Handle source);

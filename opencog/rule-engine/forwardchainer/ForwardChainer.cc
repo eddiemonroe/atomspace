@@ -47,9 +47,9 @@ void ForwardChainer::init()
     // Provide a logger
     _log = NULL;
 
-    string log_level_ = _cpolicy_loader->get_log_level();
-    setLogger(new opencog::Logger("forward_chainer.log", Logger::getLevelFromString(log_level_), true));
-    _log->info("Log level set to " + log_level_);
+//    string log_level_ = _cpolicy_loader->get_log_level();
+//    setLogger(new opencog::Logger("forward_chainer.log", Logger::getLevelFromString(log_level_), true));
+//    _log->info("Log level set to " + log_level_);
 }
 
 void ForwardChainer::setLogger(Logger* log)

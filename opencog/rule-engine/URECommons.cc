@@ -179,6 +179,35 @@ Handle URECommons::change_node_types(Handle& h,
 	return hcpy;
 }
 
+Handle URECommons::change_node_types_em(Handle& h,
+									 map<Handle, Handle>& replacement_map) {
+	Handle hcpy;
+	if (LinkCast(h)) {
+		HandleSeq hs_cpy;
+		HandleSeq hs = as_->getOutgoing(h);
+		for (Handle hi : hs) {
+			if (NodeCast(hi)) {
+				if (replacement_map.find(hi) != replacement_map.end())
+					hs_cpy.push_back(replacement_map[hi]);
+				else
+					hs_cpy.push_back(hi);
+			} else if (LinkCast(hi)) {
+				hs_cpy.push_back(change_node_types(hi, replacement_map));
+			}
+		}
+		//hcpy = as_->addLink(as_->getType(h), hs_cpy);
+		//hcpy->setTruthValue(as_->getTV(h));
+		hcpy = createLink(as_->getType(h),hs_cpy);
+	} else if (NodeCast(h)) {
+		if (replacement_map.find(h) != replacement_map.end())
+			hcpy = replacement_map[h];
+		else
+			hcpy = h;
+	}
+
+	return hcpy;
+}
+
 void URECommons::get_root_links(Handle h, HandleSeq& parents) {
 	auto incoming = as_->getIncoming(h);
 	if (incoming.empty())
