@@ -58,6 +58,9 @@ public:
      * @return a set of applicable rules
      */
     virtual std::vector<Rule*> choose_rules(Handle source) = 0;
+
+    virtual Rule* choose_rule(Handle source) = 0;
+
     /**
      * Choose additional premises for the rule.
      * @fcmem an object holding the current source/target and other inform

@@ -27,6 +27,9 @@ private:
                             bool subclasses = false);
     em_source_selection_mode ts_mode;
     opencog::Logger logger;
+
+    vector<Rule> candidate_rules;
+    vector<Rule*>::iterator rules_iterator;
 public:
 //        EMForwardChainerCB(AtomSpace* as, source_selection_mode ts_mode =
 //        TV_FITNESS_BASED);
@@ -37,6 +40,7 @@ public:
 
     void set_logger(Logger h);
 
+    virtual Rule* choose_rule(Handle source);
     virtual vector<Rule*> choose_rules(Handle source);
     virtual HandleSeq choose_premises();
     virtual Handle choose_source();

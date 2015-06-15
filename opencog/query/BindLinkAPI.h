@@ -24,6 +24,7 @@
 
 #include <opencog/atomspace/Handle.h>
 #include <opencog/atomspace/TruthValue.h>
+#include <opencog/query/Implicator.h>
 
 namespace opencog {
 
@@ -34,6 +35,8 @@ Handle single_bindlink (AtomSpace*, const Handle&);
 Handle pln_bindlink(AtomSpace*, const Handle&);
 TruthValuePtr satisfaction_link(AtomSpace*, const Handle&);
 Handle satisfying_set(AtomSpace*, const Handle&);
+    Handle do_imply(AtomSpace* as,const Handle& hbindlink,Implicator& impl,
+                bool do_conn_check=false);
 
 } // namespace opencog
 

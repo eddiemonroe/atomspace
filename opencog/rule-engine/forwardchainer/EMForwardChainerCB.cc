@@ -9,6 +9,9 @@ using namespace opencog;
 EMForwardChainerCB::EMForwardChainerCB(EMForwardChainer* fc) : fc(fc)
 {
     as = fc->get_atomspace();
+
+    rules_iterator = fc->all_rules.begin();
+
 //    as = as;
 //    fcim_ = new ForwardChainInputMatchCB(as);
 //    fcpm_ = new ForwardChainPatternMatchCB(as);
@@ -60,7 +63,25 @@ HandleSeq EMForwardChainerCB::apply_rule(Rule& rule) {
 //}
 
 
+/*
+ * This will choose the rule to apply for an inference step.
+ * For now, I am just doing a round-robin selection of each of the rules from
+ * the full list--round
+ */
+Rule * EMForwardChainerCB::choose_rule(Handle source) {
+//    // round-robin selection of all rules
+//    if (rules_iterator==fc->all_rules.end()) {
+//        rules_iterator = fc->all_rules.begin();
+//    }
+//    else {
+//        rules_iterator++;
+//    }
+//    return *rules_iterator;
 
+    // randomly choose a rule
+    int randomIndex = rand() % fc->all_rules.size();
+    return fc->all_rules[randomIndex];
+}
 
 vector<Rule *> EMForwardChainerCB::choose_rules(Handle source) {
 

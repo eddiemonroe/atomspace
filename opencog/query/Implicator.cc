@@ -70,10 +70,10 @@ namespace opencog
  * get naive users into trouble, but there are legit uses, not just
  * in PLN, for doing disconnected searches.
  */
-static Handle do_imply(AtomSpace* as,
+Handle do_imply(AtomSpace* as,
                        const Handle& hbindlink,
                        Implicator& impl,
-                       bool do_conn_check=false)
+                       bool do_conn_check)
 {
 	BindLinkPtr bl(BindLinkCast(hbindlink));
 	if (NULL == bl)
