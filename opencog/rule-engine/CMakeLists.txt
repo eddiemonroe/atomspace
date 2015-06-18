@@ -5,6 +5,7 @@ ADD_LIBRARY(ruleengine SHARED
 	backwardchainer/BackwardChainer.cc
 	backwardchainer/BackwardChainerPMCB.cc
 	backwardchainer/UnifyPMCB.cc
+	backwardchainer/Target.cc
 	URECommons.cc
 	forwardchainer/ForwardChainer.cc
 	forwardchainer/ForwardChainerPMCB.cc
@@ -37,9 +38,10 @@ INSTALL (TARGETS ruleengine DESTINATION "lib${LIB_DIR_SUFFIX}/opencog")
 
 INSTALL (FILES
 	InferenceSCM.h
-	JsonicControlPolicyParamLoader.h
+	UREConfigReader.h
 	URECommons.h
 	Rule.h
+	UREConfigReader.h
 	DESTINATION "include/${PROJECT_NAME}/rule-engine"
 )
 
