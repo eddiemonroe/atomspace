@@ -14,7 +14,7 @@ using namespace opencog;
 int MAX_PM_RESULTS = 10000;
 
 EMForwardChainer::EMForwardChainer(AtomSpace * as, string conf_path) :
-        as(as), ure_commons(as),
+        as(as), ure_commons(*as),
         cpolicy(JsonicControlPolicyParamLoader(as,conf_path))
 {
     //printf("Init EMForwardChainer\n");

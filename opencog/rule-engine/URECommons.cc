@@ -28,7 +28,7 @@
 
 using namespace opencog;
 
-URECommons::URECommons(AtomSpace& as) : _as(as) {}
+URECommons::URECommons(AtomSpace& as) : _as(as) { } 
 
 Handle URECommons::create_bindlink_from_implicationlink(Handle himplication, bool vnode_is_typedv)
 throw (opencog::InvalidParamException) {
@@ -45,21 +45,21 @@ throw (opencog::InvalidParamException) {
 
 	// For searching ImplicationLinks with variables.
 	if (vnode_is_typedv) {
-		Handle h = as_->addNode(TYPE_NODE, "VariableNode");
+		Handle h = _as.addNode(TYPE_NODE, "VariableNode");
 		for (Handle hvn : variable_nodes) {
-			Handle hi = as_->addLink(TYPED_VARIABLE_LINK, hvn, h);
+			Handle hi = _as.addLink(TYPED_VARIABLE_LINK, hvn, h);
 			list_link_elem.push_back(hi);
 		}
 	} else
 		list_link_elem.insert(list_link_elem.end(), variable_nodes.begin(),
 							  variable_nodes.end());
 
-	Handle var_listLink = as_->addLink(VARIABLE_LIST, list_link_elem);
+	Handle var_listLink = _as.addLink(VARIABLE_LIST, list_link_elem);
 
-	Handle implicationLink = as_->addLink(IMPLICATION_LINK, himplication);
+	Handle implicationLink = _as.addLink(IMPLICATION_LINK, himplication);
 
-	//Handle thebindlink = as_->addLink(BIND_LINK, var_listLink, implicationLink);
-	Handle thebindlink = as_->addLink(BIND_LINK, var_listLink, himplication);
+	//Handle thebindlink = _as.addLink(BIND_LINK, var_listLink, implicationLink);
+	Handle thebindlink = _as.addLink(BIND_LINK, var_listLink, himplication);
 //	printf("create_bind_link\nsource:\n%s\n", himplication->toShortString().c_str());
 //	printf("bindlink:\n%s\n",thebindlink->toShortString().c_str());
 	return thebindlink;
@@ -91,10 +91,10 @@ Handle URECommons::create_bindLink(Handle himplicant, bool vnode_is_typedv)
 
 	Handle var_listLink = _as.addLink(VARIABLE_LIST, list_link_elem);
 
-	Handle implicationLink = as_->addLink(IMPLICATION_LINK, himplicant,
+	Handle implicationLink = _as.addLink(IMPLICATION_LINK, himplicant,
 			himplicant);
 
-	Handle thebindlink = as_->addLink(BIND_LINK, var_listLink, implicationLink);
+	Handle thebindlink = _as.addLink(BIND_LINK, var_listLink, implicationLink);
     printf("create_bind_link\nsource:\n%s\n",himplicant->toString().c_str());
     printf("bindlink:\n%s\n",thebindlink->toString().c_str());
     return thebindlink;
@@ -179,7 +179,7 @@ Handle URECommons::change_node_types_em(Handle& h,
 	Handle hcpy;
 	if (LinkCast(h)) {
 		HandleSeq hs_cpy;
-		HandleSeq hs = as_->getOutgoing(h);
+		HandleSeq hs = _as.getOutgoing(h);
 		for (Handle hi : hs) {
 			if (NodeCast(hi)) {
 				if (replacement_map.find(hi) != replacement_map.end())
@@ -190,9 +190,9 @@ Handle URECommons::change_node_types_em(Handle& h,
 				hs_cpy.push_back(change_node_types(hi, replacement_map));
 			}
 		}
-		//hcpy = as_->addLink(as_->getType(h), hs_cpy);
-		//hcpy->setTruthValue(as_->getTV(h));
-		hcpy = createLink(as_->getType(h),hs_cpy);
+		//hcpy = _as.addLink(_as.getType(h), hs_cpy);
+		//hcpy->setTruthValue(as.getTV(h));
+		hcpy = createLink(_as.getType(h),hs_cpy);
 	} else if (NodeCast(h)) {
 		if (replacement_map.find(h) != replacement_map.end())
 			hcpy = replacement_map[h];

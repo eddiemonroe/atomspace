@@ -34,11 +34,6 @@
 using namespace opencog;
 
 
-DefaultForwardChainerCB::~DefaultForwardChainerCB()
-{
-    delete _fcpm;
-}
-
 DefaultForwardChainerCB::DefaultForwardChainerCB(AtomSpace& as,
                                                  source_selection_mode ts_mode
                                                  /*=TV_FITNESS_BASED*/)
