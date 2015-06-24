@@ -45,12 +45,21 @@ private:
 	Handle do_forward_chaining_em_default_control(Handle source);
 
 // repo version
-	// Run Forward Chaining on source h and rule-based system rbs
+	// 
+	/**
+	 * Run Forward Chaining on source h and rule-based system rbs
+	 *
+	 * @param h target
+	 * @param rbs rule-based system atom
+	 * @return ???
+	 */
 	Handle do_forward_chaining(Handle h, Handle rbs);
 	/**
-	 * @return a handle to a ListLink  of ListLinks holding a variable followed by all grounding nodes.
+	 * @param h target
+	 * @param rbs rule-based system atom
+	 * @return ???
 	 */
-	Handle do_backward_chaining(Handle h);
+	Handle do_backward_chaining(Handle h, Handle rbs);
 public:
 	InferenceSCM();
 };

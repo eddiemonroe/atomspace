@@ -21,7 +21,7 @@
 ; Load URE configuration (add the current file dir so it can be loaded
 ; from anywhere)
 (add-to-load-path (dirname (current-filename)))
-(load-from-path "simple-deduction-cpolicy.scm")
+(load-from-path "simple-deduction-config.scm")
 
 ; Define knowledge base
 (define A (ConceptNode "A"))
@@ -32,5 +32,10 @@
 
 ; (cog-fc AB (ConceptNode "crisp-rule-base"))
 
-; Expected output should be
-; TODO
+; Expected output should be something like
+;; $1 = (ListLink
+;;    (ImplicationLink (stv 1 0.99999982)
+;;       (ConceptNode "A")
+;;       (ConceptNode "C")
+;;    )
+;; )
