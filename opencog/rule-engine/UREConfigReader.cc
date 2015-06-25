@@ -28,7 +28,7 @@
 
 using namespace opencog;
 
-const std::string UREConfigReader::URE_top_name = "URE";
+const std::string UREConfigReader::top_rbs_name = "URE";
 const std::string UREConfigReader::attention_alloc_name = "URE:attention-allocation";
 const std::string UREConfigReader::max_iter_name = "URE:maximum-iterations";
 
@@ -65,6 +65,16 @@ bool UREConfigReader::get_attention_allocation() const
 int UREConfigReader::get_maximum_iterations() const
 {
 	return _rbparams.max_iter;
+}
+
+void UREConfigReader::set_attention_allocation(bool aa)
+{
+	_rbparams.attention_alloc = aa;
+}
+
+void UREConfigReader::set_maximum_iterations(int mi)
+{
+	_rbparams.max_iter = mi;
 }
 
 HandleSeq UREConfigReader::fetch_rules(Handle rbs)

@@ -34,19 +34,19 @@ class Rule;
 class DefaultForwardChainerCB: public virtual ForwardChainerCallBack
 {
 private:
-    AtomSpace * as_;
-    ForwardChainerPMCB* _fcpm;
+    AtomSpace& _as;
+    ForwardChainerPMCB _fcpm;
     HandleSeq get_rootlinks(Handle hsource, AtomSpace* as, Type link_type,
-    bool subclasses = false);
-    source_selection_mode ts_mode_;
+                            bool subclasses = false);
+    source_selection_mode _ts_mode;
 
     opencog::Logger _log;
 
 public:
-    DefaultForwardChainerCB(AtomSpace* as, source_selection_mode ts_mode =
-            TV_FITNESS_BASED);
     virtual ~DefaultForwardChainerCB();
     void set_logger(Logger h);
+    DefaultForwardChainerCB(AtomSpace& as,
+                            source_selection_mode ts_mode = TV_FITNESS_BASED);
 
     //callbacks
     virtual vector<Rule*> choose_rules(FCMemory& fcmem);
