@@ -99,7 +99,7 @@ ForwardChainer fc(*as, rbs);
 * using the rules declared in the config. A similar functionality
 * with the python version of the forward chainer.
 */
-if (h->getType() == LIST_LINK and as->getOutgoing(h).empty())
+if (h->getType() == LIST_LINK and as->get_outgoing(h).empty())
 fc.do_chain(dfc, Handle::UNDEFINED);
 else
 /** Does variable fulfillment forward chaining or forward chaining based on
@@ -113,7 +113,7 @@ else
 fc.do_chain(dfc, h);
 
 HandleSeq result = fc.get_chaining_result();
-return as->addLink(LIST_LINK, result);
+return as->add_link(LIST_LINK, result);
 #else
 return Handle::UNDEFINED;
 #endif
@@ -139,8 +139,8 @@ Handle InferenceSCM::do_forward_chaining_em(Handle source, const string& conf_pa
      * pattern matching on the atomspace using the rules declared in the config.A similar
      * functionality with the python version of the  forward chainer.
      */
-    if (h->getType() == LIST_LINK and as->get_outgoing(h).empty())
-        fc.do_chain(dfc, Handle::UNDEFINED);
+    if (source->getType() == LIST_LINK and as->get_outgoing(source).empty())
+        fc.do_chain(Handle::UNDEFINED);
     else
         /** Does variable fulfillment forward chaining or forward chaining based on
          *  target node @param h.

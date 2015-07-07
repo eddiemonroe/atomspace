@@ -45,21 +45,21 @@ throw (opencog::InvalidParamException) {
 
 	// For searching ImplicationLinks with variables.
 	if (vnode_is_typedv) {
-		Handle h = _as.addNode(TYPE_NODE, "VariableNode");
+		Handle h = _as.add_node(TYPE_NODE, "VariableNode");
 		for (Handle hvn : variable_nodes) {
-			Handle hi = _as.addLink(TYPED_VARIABLE_LINK, hvn, h);
+			Handle hi = _as.add_link(TYPED_VARIABLE_LINK, hvn, h);
 			list_link_elem.push_back(hi);
 		}
 	} else
 		list_link_elem.insert(list_link_elem.end(), variable_nodes.begin(),
 							  variable_nodes.end());
 
-	Handle var_listLink = _as.addLink(VARIABLE_LIST, list_link_elem);
+	Handle var_listLink = _as.add_link(VARIABLE_LIST, list_link_elem);
 
-	Handle implicationLink = _as.addLink(IMPLICATION_LINK, himplication);
+	Handle implicationLink = _as.add_link(IMPLICATION_LINK, himplication);
 
-	//Handle thebindlink = _as.addLink(BIND_LINK, var_listLink, implicationLink);
-	Handle thebindlink = _as.addLink(BIND_LINK, var_listLink, himplication);
+	//Handle thebindlink = _as.add_link(BIND_LINK, var_listLink, implicationLink);
+	Handle thebindlink = _as.add_link(BIND_LINK, var_listLink, himplication);
 //	printf("create_bind_link\nsource:\n%s\n", himplication->toShortString().c_str());
 //	printf("bindlink:\n%s\n",thebindlink->toShortString().c_str());
 	return thebindlink;
@@ -179,7 +179,7 @@ Handle URECommons::change_node_types_em(Handle& h,
 	Handle hcpy;
 	if (LinkCast(h)) {
 		HandleSeq hs_cpy;
-		HandleSeq hs = _as.getOutgoing(h);
+		HandleSeq hs = _as.get_outgoing(h);
 		for (Handle hi : hs) {
 			if (NodeCast(hi)) {
 				if (replacement_map.find(hi) != replacement_map.end())
@@ -190,9 +190,9 @@ Handle URECommons::change_node_types_em(Handle& h,
 				hs_cpy.push_back(change_node_types(hi, replacement_map));
 			}
 		}
-		//hcpy = _as.addLink(_as.getType(h), hs_cpy);
-		//hcpy->setTruthValue(as.getTV(h));
-		hcpy = createLink(_as.getType(h),hs_cpy);
+		//hcpy = _as.add_link(_as.getType(h), hs_cpy);
+		//hcpy->setTruthValue(as.get_TV(h));
+		hcpy = createLink(_as.get_type(h),hs_cpy);
 	} else if (NodeCast(h)) {
 		if (replacement_map.find(h) != replacement_map.end())
 			hcpy = replacement_map[h];
