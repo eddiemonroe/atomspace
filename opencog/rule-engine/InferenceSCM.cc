@@ -139,11 +139,9 @@ Handle InferenceSCM::do_forward_chaining_em(Handle source, const string& conf_pa
      * pattern matching on the atomspace using the rules declared in the config.A similar
      * functionality with the python version of the  forward chainer.
      */
-    // ??? so if the source is a listlink and there's nothing pointing to it, then don't use it?
-    //re and as->getIncoming(h).empty(): hmmmm.. what if list happens to be used somewhere else in the atomspace
-//    if (h->getType() == LIST_LINK and as->getIncoming(h).empty())
-//        fc.do_chain(fccb, Handle::UNDEFINED);
-//    else
+    if (h->getType() == LIST_LINK and as->get_outgoing(h).empty())
+        fc.do_chain(dfc, Handle::UNDEFINED);
+    else
         /** Does variable fulfillment forward chaining or forward chaining based on
          *  target node @param h.
          *  example (cog-fc (InheritanceLink (VariableNode "$X") (ConceptNode "Human")))
@@ -155,7 +153,7 @@ Handle InferenceSCM::do_forward_chaining_em(Handle source, const string& conf_pa
         fc.do_chain(source,&fccb);
 
     HandleSeq result = fc.get_chaining_result();
-    return as->addLink(LIST_LINK, result);
+    return as->add_link(LIST_LINK, result);
 #else
     return Handle::UNDEFINED;
 #endif
@@ -182,10 +180,10 @@ Handle InferenceSCM::do_backward_chaining(Handle h, Handle rbs)
         hs.push_back(it->first);
         hs.insert(hs.end(), it->second.begin(), it->second.end());
 
-        soln_list_link.push_back(as->addLink(LIST_LINK, hs));
+        soln_list_link.push_back(as->add_link(LIST_LINK, hs));
     }
 
-    return as->addLink(LIST_LINK, soln_list_link);
+    return as->add_link(LIST_LINK, soln_list_link);
 #else
     return Handle::UNDEFINED;
 #endif
