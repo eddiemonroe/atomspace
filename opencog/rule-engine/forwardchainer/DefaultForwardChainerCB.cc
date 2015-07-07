@@ -225,6 +225,7 @@ HandleSeq DefaultForwardChainerCB::apply_rule(FCMemory& fcmem)
         bl = createBindLink(*LinkCast(rule_handle));
     }
     _fcpm.implicand = bl->get_implicand();
+    _fcpm.max_results = 1000;
     bl->imply(_fcpm);
     // bl->satisfy(*_fcpm);
 
