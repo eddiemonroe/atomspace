@@ -46,6 +46,10 @@ private:
 	 * @return ???
 	 */
 	Handle do_forward_chaining(Handle h, Handle rbs);
+
+	//specialized function for bio project
+	Handle do_forward_chaining_bio(Handle h, Handle rbs);
+
 	/**
 	 * @param h target
 	 * @param rbs rule-based system atom

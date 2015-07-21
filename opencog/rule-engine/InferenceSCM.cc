@@ -77,6 +77,11 @@ void InferenceSCM::init(void)
                             this, "rule-engine");
     define_scheme_primitive("cog-bc", &InferenceSCM::do_backward_chaining,
                             this, "rule-engine");
+
+    // specialized code for bio fc experiment
+    define_scheme_primitive("cog-fc-bio", &InferenceSCM::do_forward_chaining_bio,
+                            this, "rule-engine");
+
 #endif
 }
 
@@ -106,6 +111,38 @@ Handle InferenceSCM::do_forward_chaining(Handle h, Handle rbs)
         fc.do_chain(dfc, h);
 
     HandleSeq result = fc.get_chaining_result();
+    return as->add_link(LIST_LINK, result);
+#else
+    return Handle::UNDEFINED;
+#endif
+}
+
+Handle InferenceSCM::do_forward_chaining_bio(Handle h, Handle rbs)
+{
+#ifdef HAVE_GUILE
+    AtomSpace *as = SchemeSmob::ss_get_env_as("cog-fc");
+    DefaultForwardChainerCB dfc(*as);
+    ForwardChainer fc(*as, rbs);
+    /**
+     * Parse (cog-fc ListLink()) as forward chaining with
+     * Handle::UNDEFINED which does pattern matching on the atomspace
+     * using the rules declared in the config. A similar functionality
+     * with the python version of the forward chainer.
+     */
+    if (h->getType() == LIST_LINK and as->get_outgoing(h).empty())
+        fc.do_chain(dfc, Handle::UNDEFINED);
+    else
+        /** Does variable fulfillment forward chaining or forward chaining based on
+         *  target node @param h.
+         *  example (cog-fc (InheritanceLink (VariableNode "$X") (ConceptNode "Human")))
+         *  finds all the matches for $X by first finding matching rules and then applying
+         *  all of them using the pattern matcher.
+         *  and (cog-fc (ConceptNode "Human")) will start forward chaining on the concept Human
+         *  trying to generate inferences associated only with the conceptNode Human.
+         */
+        fc.do_chain_bio(dfc, h);
+
+    HandleSeq result = fc.get_conclusions();
     return as->add_link(LIST_LINK, result);
 #else
     return Handle::UNDEFINED;

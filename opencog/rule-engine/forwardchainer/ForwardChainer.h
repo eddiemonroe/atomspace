@@ -50,6 +50,10 @@ private:
     Logger * _log;
     int _iteration = 0;
 
+    //special for bio project
+    set<Handle> conclusions;
+
+
     /**
      * initialize config methods
      */
@@ -68,9 +72,13 @@ public:
 	 * Ctor. rbs is a Handle pointing to rule-based system.
 	 */
     ForwardChainer(AtomSpace& as, Handle rbs);
-    void do_chain(ForwardChainerCallBack& fcb, Handle hsource =
-            Handle::UNDEFINED);
+    void do_chain(ForwardChainerCallBack& fcb,
+                  Handle hsource = Handle::UNDEFINED);
+    void do_chain_bio(ForwardChainerCallBack& fcb,
+                      Handle hsource = Handle::UNDEFINED);
+    HandleSeq get_conclusions();
     void do_step(ForwardChainerCallBack& fcb);
+    void do_step_bio(ForwardChainerCallBack& fcb);
     HandleSeq get_chaining_result(void);
 
     void setLogger(Logger* log);
