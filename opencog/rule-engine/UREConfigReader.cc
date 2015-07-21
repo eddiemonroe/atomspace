@@ -25,6 +25,7 @@
 
 #include <opencog/atoms/NumberNode.h>
 #include <opencog/query/BindLinkAPI.h>
+#include <opencog/atomspaceutils/AtomSpaceUtils.h>
 
 using namespace opencog;
 
@@ -35,8 +36,6 @@ const std::string UREConfigReader::max_iter_name = "URE:maximum-iterations";
 UREConfigReader::UREConfigReader(AtomSpace& as, Handle rbs) : _as(as)
 {
 	// Retrieve the rules (BindLinks) and instantiate them
-	// HandleSeq rules = fetch_rules(rbs);
-	// _rbparams.rules.insert(rules.begin(), rules.end());
 	for (Handle rule : fetch_rules(rbs))
 		_rbparams.rules.emplace_back(rule);
 
@@ -88,29 +87,39 @@ HandleSeq UREConfigReader::fetch_rules(Handle rbs)
 	                         _as.add_link(MEMBER_LINK, rule_var, rbs));
 	Handle rule_names = satisfying_set(&_as, gl);
 
-	// Remove the GetLink from the AtomSpace as it is no longer useful
-	_as.remove_atom(gl);
+	// Remove the GetLink pattern from the AtomSpace as it is no
+	// longer useful
+	remove_descendants(_as, gl);
 
 	return LinkCast(rule_names)->getOutgoingSet();
 }
 
-HandleSeq UREConfigReader::fetch_execution_outputs(Handle schema, Handle input)
+HandleSeq UREConfigReader::fetch_execution_outputs(Handle schema,
+                                                   Handle input,
+                                                   Type type)
 {
 	// Retrieve rules
-	Handle output_var = _as.add_node(VARIABLE_NODE, "__EXECUTION_OUTPUT_VAR__");
-	Handle gl = _as.add_link(GET_LINK,
-	                         // ExecutionLink
-	                         //    <schema>
-	                         //    <input>
-	                         //    output_var
-	                         _as.add_link(EXECUTION_LINK,
-	                                      schema,
-	                                      input,
-	                                      output_var));
-	Handle outputs = satisfying_set(&_as, gl);
+	Handle var_node = _as.add_node(VARIABLE_NODE, "__EXECUTION_OUTPUT_VAR__"),
+		type_node = _as.add_node(TYPE_NODE, classserver().getTypeName(type)),
+		typed_var = _as.add_link(TYPED_VARIABLE_LINK, var_node, type_node),
+		gl = _as.add_link(GET_LINK,
+		                  // TypedVariableLink
+		                  //    var_node
+		                  //    type_node
+		                  typed_var,
+		                  // ExecutionLink
+		                  //    <schema>
+		                  //    <input>
+		                  //    var_node
+		                  _as.add_link(EXECUTION_LINK,
+		                               schema,
+		                               input,
+		                               var_node)),
+		outputs = satisfying_set(&_as, gl);
 
-	// Remove the GetLink from the AtomSpace as it is no longer useful
-	_as.remove_atom(gl);
+	// Remove the GetLink pattern from the AtomSpace as it is no
+	// longer useful
+	remove_descendants(_as, gl);
 
 	return LinkCast(outputs)->getOutgoingSet();
 }
@@ -118,7 +127,7 @@ HandleSeq UREConfigReader::fetch_execution_outputs(Handle schema, Handle input)
 double UREConfigReader::fetch_num_param(const string& schema_name, Handle input)
 {
 	Handle param_schema = _as.add_node(SCHEMA_NODE, schema_name);
-	HandleSeq outputs = fetch_execution_outputs(param_schema, input);
+	HandleSeq outputs = fetch_execution_outputs(param_schema, input, NUMBER_NODE);
 	{
 		string input_name = NodeCast(input)->getName();
 		Type input_type = input->getType();
