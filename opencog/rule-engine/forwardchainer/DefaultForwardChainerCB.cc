@@ -171,6 +171,10 @@ Handle DefaultForwardChainerCB::choose_next_source(FCMemory& fcmem)
 
 HandleSeq DefaultForwardChainerCB::apply_rule(FCMemory& fcmem)
 {
+    //temp debug:
+    // Provide a logger
+    Logger * _log = new opencog::Logger("forward_chainer.log", Logger::FINE, true);
+
     _fcpm.set_fcmem(&fcmem);
 
     auto rule_handle = fcmem.get_cur_rule()->get_handle();
@@ -180,13 +184,22 @@ HandleSeq DefaultForwardChainerCB::apply_rule(FCMemory& fcmem)
     }
     _fcpm.implicand = bl->get_implicand();
     _fcpm.max_results = 1000;
+    _log->debug("Start bl->imply");
+    _log->debug("bl:" );
+    _log->debug(bl->toShortString());
     bl->imply(_fcpm);
+    _log->debug("End bl->imply");
     // bl->satisfy(*_fcpm);
 
     HandleSeq product = _fcpm.get_products();
 
+    //temp debug
+    _log->debug("num of products (old and new): %i", product.size());
+
+
     //! Make sure the inferences made are new.
     for (auto iter = product.begin(); iter != product.end();) {
+        //_log->debug((*iter)->toString());
         if (fcmem.isin_potential_sources(*iter))
             iter = product.erase(iter);
         else

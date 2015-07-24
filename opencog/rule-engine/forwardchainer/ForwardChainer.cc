@@ -40,6 +40,11 @@ ForwardChainer::ForwardChainer(AtomSpace& as, Handle rbs) :
     init();
 }
 
+// temporary util until rule names are fixed
+const char * getFormulaName(Rule *rule) {
+    return NodeCast((LinkCast(rule->get_implicand()))->getOutgoingSet()[0])->getName().c_str();
+}
+
 void ForwardChainer::init()
 {
     _fcmem.set_search_in_af(_configReader.get_attention_allocation());
@@ -49,7 +54,17 @@ void ForwardChainer::init()
     // Provide a logger
     _log = NULL;
     setLogger(new opencog::Logger("forward_chainer.log", Logger::FINE, true));
+
+
+
+    //temp code for debugging rules
+    _log->debug("All FC Rules:");
+    for (Rule* rule : _fcmem.get_rules()) {
+        _log->debug(getFormulaName(rule));
+        //_log->debug(NodeCast((LinkCast(rule->get_implicand()))->getOutgoingSet()[0])->getName());     //toShortString().c_str()); //toString().c_str());
+    }
 }
+
 
 void ForwardChainer::setLogger(Logger* log)
 {
@@ -82,7 +97,7 @@ void ForwardChainer::do_step(ForwardChainerCallBack& fcb)
 
     // Choose matching rules whose input matches with the source.
     vector<Rule*> matched_rules = fcb.choose_rules(_fcmem);
-    _log->info("[ForwardChainer] Found matching rule");
+    _log->info("[ForwardChainer] Found matching rule(s) (maybe)");
 
     //! If no rules matches the pattern of the source,
     //! set all rules for candidacy to be selected by the proceeding step.
@@ -104,16 +119,18 @@ void ForwardChainer::do_step(ForwardChainerCallBack& fcb)
                "candidate rules.");
     Rule* r = _rec.tournament_select(rule_weight);
     _fcmem.set_cur_rule(r);
-    _log->info("[ForwardChainer] Selected rule is %s", (r->get_handle())->toShortString().c_str());
+    //_log->info("[ForwardChainer] Selected rule is %s", (r->get_handle())->toShortString().c_str());
+    _log->info("[ForwardChainer] Selected rule is %s", getFormulaName(r));
 
     //!TODO Find/add premises?
 
     //! Apply rule.
     _log->info("[ForwardChainer] Applying chosen rule %s",
-               (r->get_handle())->toShortString().c_str());
+               //(r->get_handle())->toShortString().c_str());
+                getFormulaName(r));
     HandleSeq product = fcb.apply_rule(_fcmem);
 
-    _log->info("PRODUCTS...");
+    _log->info("NEW PRODUCTS: %i", product.size());
     for(const auto& p:product)
     {
         _log->info("%s ", p->toShortString().c_str() );
