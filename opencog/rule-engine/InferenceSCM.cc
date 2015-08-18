@@ -87,6 +87,10 @@ void InferenceSCM::init(void)
 
 Handle InferenceSCM::do_forward_chaining(Handle h, Handle rbs)
 {
+    if (Handle::UNDEFINED == rbs)
+        throw RuntimeException(TRACE_INFO,
+            "InferenceSCM::do_forward_chaining - invalid rulebase!");
+
 #ifdef HAVE_GUILE
     AtomSpace *as = SchemeSmob::ss_get_env_as("cog-fc");
     DefaultForwardChainerCB dfc(*as);
@@ -151,6 +155,10 @@ Handle InferenceSCM::do_forward_chaining_bio(Handle h, Handle rbs)
 
 Handle InferenceSCM::do_backward_chaining(Handle h, Handle rbs)
 {
+    if (Handle::UNDEFINED == rbs)
+        throw RuntimeException(TRACE_INFO,
+            "InferenceSCM::do_backward_chaining - invalid rulebase!");
+
 #ifdef HAVE_GUILE
     AtomSpace *as = SchemeSmob::ss_get_env_as("cog-bc");
 

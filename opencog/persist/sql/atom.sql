@@ -1,3 +1,15 @@
+-- -----------------------------------------------------------
+-- Table showing inheritance relationship between atomspaces.
+-- Atomspaces have UUID's identifying them. Top-level atomspaces have
+-- a UUID of zero.  Otherwise, all atomspaces have some (other)
+-- atomspace as a parent.
+
+CREATE TABLE Spaces (
+	space  BIGINT PRIMARY KEY,
+	parent BIGINT
+);
+
+INSERT INTO Spaces VALUES (1,1); -- default root
 
 --
 -- Create a table representation for an opencog Atom
@@ -10,7 +22,7 @@ CREATE TABLE Atoms (
 	uuid	BIGINT PRIMARY KEY,
 
 	-- The atomspace that this atom belongs to.
-	space BIGINT,
+	space BIGINT REFERENCES spaces(space),
 
 	-- Atom type, e.g. Link, Node, etc.
 	type  SMALLINT,
@@ -43,8 +55,11 @@ CREATE TABLE Atoms (
 
 -- Indexes, needed for fast node and link lookup.
 -- Make them unique, to catch any errors early.
-CREATE UNIQUE INDEX nodeidx ON Atoms(type, name);
-CREATE UNIQUE INDEX linkidx ON Atoms(type, outgoing);
+-- Actually, this is not needed; the unique constraints on the table
+-- defacto create indexes; creating them again just doubles the index.
+-- CREATE UNIQUE INDEX nodeidx ON Atoms(type, name);
+-- CREATE UNIQUE INDEX linkidx ON Atoms(type, outgoing);
+
 
 -- -----------------------------------------------------------
 -- Edge table is not used by the postgres driver.  That is because
@@ -78,17 +93,6 @@ CREATE UNIQUE INDEX linkidx ON Atoms(type, outgoing);
 CREATE TABLE TypeCodes (
 	type SMALLINT UNIQUE,
 	typename TEXT UNIQUE
-);
-
--- -----------------------------------------------------------
--- Table showing inheritance relationship between atomspaces.
--- Atomspaces have UUID's identifying them. Top-level atomspaces have
--- a UUID of zero.  Otherwise, all atomspaces have some (other)
--- atomspace as a parent.
-
-CREATE TABLE Spaces (
-	space  BIGINT,
-	parent BIGINT
 );
 
 -- -----------------------------------------------------------

@@ -18,7 +18,7 @@ IF (COMMAND CMAKE_POLICY)
 	CMAKE_POLICY(SET CMP0005 OLD)
 ENDIF (COMMAND CMAKE_POLICY)
 
-PROJECT(opencog)
+PROJECT(atomspace)
 
 # To supress Cygwin warning "CMake no longer defines WIN32 on Cygwin!"
 # Remove when CMake >= 2.8.4 is required to build the project
@@ -186,10 +186,7 @@ ENDIF (NOT CXXTEST_FOUND)
 FIND_PACKAGE(Stack)
 IF (STACK_FOUND)
 	ADD_DEFINITIONS(-DHAVE_STACK)
-	MESSAGE(STATUS "Stack found.")
 	SET(HAVE_STACK 1)
-ELSE (STACK_FOUND)
-	MESSAGE(STATUS "Stack was not found; Haskell bindings will not be built.")
 ENDIF (STACK_FOUND)
 
 # Gnu Scientific Library
