@@ -37,6 +37,7 @@ int MAX_PM_RESULTS = 10000;
 ForwardChainer::ForwardChainer(AtomSpace& as, Handle rbs) :
 	_as(as), _rec(_as), _rbs(rbs), _configReader(as, rbs), _fcmem(&as)
 {
+    cout << "ForwardChainer::ForwardChainer()" << endl;
     init();
 }
 
@@ -47,6 +48,9 @@ const char * getFormulaName(Rule *rule) {
 
 void ForwardChainer::init()
 {
+
+    cout << "ForwardChainer::init()" << endl;
+
     _fcmem.set_search_in_af(_configReader.get_attention_allocation());
     _fcmem.set_rules(_configReader.get_rules());
     _fcmem.set_cur_rule(nullptr);
@@ -54,15 +58,15 @@ void ForwardChainer::init()
     // Provide a logger
     _log = NULL;
     setLogger(new opencog::Logger("forward_chainer.log", Logger::FINE, true));
-
-
-
+    
     //temp code for debugging rules
     _log->debug("All FC Rules:");
     for (Rule* rule : _fcmem.get_rules()) {
         _log->debug(getFormulaName(rule));
         //_log->debug(NodeCast((LinkCast(rule->get_implicand()))->getOutgoingSet()[0])->getName());     //toShortString().c_str()); //toString().c_str());
     }
+
+    cerr << "logger stuff to fc.log should have happened above" << endl;
 }
 
 
@@ -109,6 +113,11 @@ void ForwardChainer::do_step(ForwardChainerCallBack& fcb)
         matched_rules = _fcmem.get_rules();
     }
 
+    _log->debug("matched_rules:");
+    for (auto rule : matched_rules) {
+        _log->debug("     %s", rule->get_name().c_str());
+    }
+
     // Select a rule amongst the matching rules by tournament selection
     map<Rule*, float> rule_weight;
     for (Rule* r : matched_rules) {
@@ -120,14 +129,21 @@ void ForwardChainer::do_step(ForwardChainerCallBack& fcb)
     Rule* r = _rec.tournament_select(rule_weight);
     _fcmem.set_cur_rule(r);
     //_log->info("[ForwardChainer] Selected rule is %s", (r->get_handle())->toShortString().c_str());
-    _log->info("[ForwardChainer] Selected rule is %s", getFormulaName(r));
+    _log->debug("Current rule: %s", r->get_name().c_str());
+    _log->debug("[ForwardChainer] Selected rule formula is %s", getFormulaName(r));
 
     //!TODO Find/add premises?
 
     //! Apply rule.
-    _log->info("[ForwardChainer] Applying chosen rule %s",
+    _log->debug("[ForwardChainer] Applying chosen rule %s",
                //(r->get_handle())->toShortString().c_str());
                 getFormulaName(r));
+
+
+    _log->debug("Applying rule, _fcmem current rule: %s",
+                _fcmem.get_cur_rule()->get_handle()->toShortString().c_str());
+
+
     HandleSeq product = fcb.apply_rule(_fcmem);
 
     _log->info("NEW PRODUCTS: %i", product.size());
