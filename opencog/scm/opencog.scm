@@ -21,6 +21,8 @@
 (define-module (opencog))
 (load-extension "libsmob" "opencog_guile_init")
 
+(add-to-load-path "/usr/local/share/opencog/scm")
+
 (use-modules (system base compile))
 
 ; Initialze a default atomspace, just to keep things sane...
