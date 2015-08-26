@@ -74,6 +74,13 @@ public:
      * @return a set of handles created as a result of applying current choosen rule
      */
     virtual HandleSeq apply_rule(FCMemory& fcmem) = 0;
+
+    /**
+     * Choose a rule to apply to a forward chaining step based on @param source.
+     * Return the rule partially grounded by the source. If no rules can be
+     * unified with the current source, returns NULL.
+     **/
+    virtual Rule get_grounded_rule(Handle source, FCMemory& fcmem) = 0;
 };
 
 } // ~namespace opencog

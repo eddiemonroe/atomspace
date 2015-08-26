@@ -58,6 +58,8 @@ public:
 
     // new_rules formed by substituting source to matching implicant
     std::map<Handle,std::vector<Handle> > rule_derivations;
+
+    Rule get_grounded_rule(Handle source, FCMemory &fcmem);
 };
 
 } // ~namespace opencog

@@ -83,6 +83,10 @@ public:
 
     void setLogger(Logger* log);
     Logger* getLogger(void);
+
+    void do_step_new(ForwardChainerCallBack&);
+
+
 };
 
 } // ~namespace opencog

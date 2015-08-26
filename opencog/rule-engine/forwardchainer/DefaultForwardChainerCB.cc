@@ -45,6 +45,7 @@ DefaultForwardChainerCB::DefaultForwardChainerCB(AtomSpace& as,
 {
 }
 
+
 /**
  * Choose rules based on implicant member of rule matching
  * the source. Whenever a matching rule is found, it derives
@@ -86,6 +87,83 @@ vector<Rule*> DefaultForwardChainerCB::choose_rules(FCMemory& fcmem)
 
     return chosen_rules;
 }
+
+/**
+ * Choose a rule to apply to a forward chaining step based on @param source.
+ * Return the rule partially grounded by the source. If no
+ * rules can be unified with the current source, returns NULL.
+ *
+ * 1. Stochastically choose a non-previously-chosen rule from the rule base
+ * 2. Attempt to ground rule with source (if fails, choose new rule)
+ * 3. Return rule grounded by source
+ */
+Rule DefaultForwardChainerCB::get_grounded_rule(Handle source,FCMemory& fcmem)
+{
+    // Provide a logger
+    // Todo: this should be moved, probably to be a member var
+    Logger * log = new opencog::Logger("forward_chainer.log", Logger::FINE,
+                                       true);
+    log->debug("get_grounded_rule() source: %s",source->toString().c_str());
+
+    vector<Rule*> candidate_rules = fcmem.get_rules();
+    // init rule weight map needed for tournament seleciton
+    map<Rule*, float> candidate_rule_map;
+    for (Rule* r : candidate_rules) {
+        candidate_rule_map[r] = r->get_weight();
+    }
+
+    URECommons commons(_as);
+    HandleSeq derived_rules = {};
+    while (candidate_rule_map.size() > 0) {
+        Rule *r = commons.tournament_select(candidate_rule_map);
+        log->debug("Checking rule: %s", r->get_name().c_str());
+
+        //TODO: why is the below happening? why do we need to iterate through
+        //the conclusions/implicands when we just need to unify with the
+        //premises?
+        HandleSeq implicand_seq = r->get_implicand_seq();
+        log->fine("Found %i implicand clauses(?)",implicand_seq.size());
+        for (auto clause : implicand_seq) {
+            log->fine(clause->toString().c_str());
+        }
+        for(Handle target: implicand_seq)
+        {
+            HandleSeq derived_r_seq_initial_hmmm = unify(source,target,r);
+            derived_rules.insert(derived_rules.end(), derived_r_seq_initial_hmmm.begin(),
+                                 derived_r_seq_initial_hmmm.end());
+            //derived_rules.insert(hs);  //for derived_rules as a set
+        }
+
+        if (derived_rules.size() > 0) {
+            log->debug("Found %i substitions",derived_rules.size());
+            for (Handle h : derived_rules) {
+                //log->debug("%s\n", h->toShortString().c_str());
+            }
+            //Randomly choose one of the substitution positions.
+            //For now each position has equal weight, but this can be changed
+            //to stochastically choose based on weights (e.g., using
+            //tournament_select()).
+            int random_index = rand() % derived_rules.size();
+            Rule grounded_rule = Rule(derived_rules[random_index]);
+            grounded_rule.set_name(r->get_name());
+            return grounded_rule;
+            //Handle grounded_bl = derived_rules[random_index]
+            //return derived_rules[random_index];
+        }
+
+        else {
+            //no grounding found for current rule, so remove it from candidates
+            candidate_rule_map.erase(r);
+        }
+    } //end while (candidate_rule_map.size() > 0)
+
+    //no rule in rule base unifies with the source
+    log->debug("No rule unifies with source.");
+    return Handle::UNDEFINED;
+}
+
+
+
 
 /**
  * Tries to unify the @param source with @parama target and derives

@@ -62,7 +62,8 @@ void ForwardChainer::init()
     //temp code for debugging rules
     _log->debug("All FC Rules:");
     for (Rule* rule : _fcmem.get_rules()) {
-        _log->debug(getFormulaName(rule));
+        _log->debug(rule->get_name().c_str());
+        //_log->debug(getFormulaName(rule));
         //_log->debug(NodeCast((LinkCast(rule->get_implicand()))->getOutgoingSet()[0])->getName());     //toShortString().c_str()); //toString().c_str());
     }
 
@@ -81,6 +82,79 @@ Logger* ForwardChainer::getLogger()
 {
     return _log;
 }
+
+///**
+// * Choose a rule to apply to a forward chaining step based on a previously
+// * selected source. Return the rule partially grounded by the source. If no
+// * rules can be unified with the current source, NULL is returned.
+// *
+// * 1. Stochastically choose a non-previously-chosen rule from the rule base
+// * 2. Attempt to ground rule with source (if fails, choose new rule)
+// * 3. Return rule grounded by source
+// */
+//Rule * ForwardChainer::get_grounded_rule(Handle source,
+//                                        ForwardChainerCallBack& fcb) {
+//    vector<Rule*> candidate_rules = _fcmem.get_rules();
+//
+//    map<Rule*, float> rule_weight_map;
+//    for (Rule* r : candidate_rules) {
+//        rule_weight_map[r] = r->get_weight();
+//    }
+//
+//    _log->info("[ForwardChainer] Selecting a rule from the set of "
+//                       "candidate rules.");
+//
+//    while (!rule_weight_map.empty()) {
+//        Rule *r = _rec.tournament_select(rule_weight_map);
+//
+//        HandleSeq hs = r->get_implicand_seq();
+//        for(Handle target: hs)
+//        {
+//            HandleSeq hs = fcb.unify(source,target,r);
+//            derived_rules.insert(derived_rules.end(),hs.begin(),hs.end());
+//        }
+//        //Chosen rule.
+//        if (not derived_rules.empty())
+//        {
+//            chosen_rules.push_back(rule);
+//            rule_derivations[rule->get_handle()] = derived_rules;
+//        }
+//
+//    }
+//
+//}
+
+
+
+/**
+ * Does a single step of forward chaining based on a previously chosen source.
+ *
+ * @param fcb a concrete implementation of of ForwardChainerCallBack class
+ */
+void ForwardChainer::do_step_new(ForwardChainerCallBack& fcb) {
+
+    Handle cur_source = _fcmem.get_cur_source();
+    if (cur_source == Handle::UNDEFINED) {
+        _log->debug("do_step(): No current source set in _fcmem ");
+        return;
+    }
+
+    _log->info("[ForwardChainer] Current source %s",
+               cur_source->toShortString().c_str());
+
+    Rule grounded_rule = fcb.get_grounded_rule(cur_source,_fcmem);
+    if (grounded_rule == Handle::UNDEFINED) {
+        _log->debug("No rule unifies with current source.");
+        return;
+    }
+
+    _log->debug("Applying rule: %s",grounded_rule.get_name().c_str());
+    _log->fine("grounded rule: %s",grounded_rule.get_handle()->toShortString().c_str());
+
+
+
+}
+
 
 /**
  * Does one step forward chaining
@@ -331,7 +405,7 @@ void ForwardChainer::do_step_bio(ForwardChainerCallBack& fcb)
             impl.implicand = bl->get_implicand();
             bl->imply(impl,false);
             //rule_conclusions = _as.add_link(SET_LINK, impl.result_list);
-            rule_conclusions = impl.result_list;
+            rule_conclusions = impl.get_result_list();
 
 
             //            BindLinkPtr bindlink(BindLinkCast(grounded_rule));
@@ -430,7 +504,7 @@ void ForwardChainer::do_chain(ForwardChainerCallBack& fcb,
     while (_iteration < max_iter /*OR other termination criteria*/) {
         _log->info("Iteration %d", _iteration);
 
-        do_step(fcb);
+        do_step_new(fcb);
 
         //! Choose next source.
         _log->info("[ForwardChainer] setting next source");
