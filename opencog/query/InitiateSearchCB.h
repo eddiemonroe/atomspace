@@ -26,11 +26,13 @@
 #define _OPENCOG_INITIATE_SEARCH_H
 
 #include <opencog/atomspace/types.h>
-#include <opencog/atomspace/AtomSpace.h>
+#include <opencog/atoms/bind/PatternLink.h>
 #include <opencog/query/PatternMatchCallback.h>
 #include <opencog/query/PatternMatchEngine.h>
 
 namespace opencog {
+
+class AtomSpace;
 
 /**
  * Callback mixin class, used to provide a default atomspace search.
@@ -61,10 +63,15 @@ class InitiateSearchCB : public virtual PatternMatchCallback
 		const VariableTypeMap* _type_restrictions;
 		const std::set<Handle>* _dynamic;
 
+		PatternLinkPtr _pl;
+		void jit_analyze(PatternMatchEngine *);
+
 		Handle _root;
 		Handle _starter_term;
 
 		virtual Handle find_starter(const Handle&, size_t&, Handle&, size_t&);
+		virtual Handle find_starter_recursive(const Handle&, size_t&, Handle&,
+		                                      size_t&);
 		virtual Handle find_thinnest(const HandleSeq&,
 		                             const std::set<Handle>&,
 		                             Handle&, size_t&);
