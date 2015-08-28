@@ -123,10 +123,15 @@ Handle InferenceSCM::do_forward_chaining(Handle h, Handle rbs)
 
 Handle InferenceSCM::do_forward_chaining_bio(Handle h, Handle rbs)
 {
+    cout << "IferenceSCM::do_fowrad_chaining_bio" << endl;
 #ifdef HAVE_GUILE
+    cout << "Inside HAVE_GUILE" << endl;
     AtomSpace *as = SchemeSmob::ss_get_env_as("cog-fc");
     DefaultForwardChainerCB dfc(*as);
+    cout << "Creating ForwardChainer" << endl;
     ForwardChainer fc(*as, rbs);
+    cout << "FC creation complete" << endl;
+
     /**
      * Parse (cog-fc ListLink()) as forward chaining with
      * Handle::UNDEFINED which does pattern matching on the atomspace

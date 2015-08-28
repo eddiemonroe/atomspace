@@ -80,7 +80,11 @@ public:
      * Return the rule partially grounded by the source. If no rules can be
      * unified with the current source, returns NULL.
      **/
-    virtual Rule get_grounded_rule(Handle source, FCMemory& fcmem) = 0;
+    virtual pair<Handle,string> get_grounded_rule(Handle source,
+                                                  FCMemory& fcmem) = 0;
+
+    virtual HandleSeq execute_bindlink(Handle blh, FCMemory& fcmem) = 0;
+
 };
 
 } // ~namespace opencog

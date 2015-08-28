@@ -91,19 +91,19 @@ vector<Rule*> DefaultForwardChainerCB::choose_rules(FCMemory& fcmem)
 /**
  * Choose a rule to apply to a forward chaining step based on @param source.
  * Return the rule partially grounded by the source. If no
- * rules can be unified with the current source, returns NULL.
+ * rules can be unified with the current source, returns Handle::UNDEFINED.
  *
  * 1. Stochastically choose a non-previously-chosen rule from the rule base
  * 2. Attempt to ground rule with source (if fails, choose new rule)
  * 3. Return rule grounded by source
  */
-Rule DefaultForwardChainerCB::get_grounded_rule(Handle source,FCMemory& fcmem)
+pair<Handle,string> DefaultForwardChainerCB::get_grounded_rule(Handle source,FCMemory& fcmem)
 {
     // Provide a logger
     // Todo: this should be moved, probably to be a member var
     Logger * log = new opencog::Logger("forward_chainer.log", Logger::FINE,
                                        true);
-    log->debug("get_grounded_rule() source: %s",source->toString().c_str());
+    //log->debug("get_grounded_rule() source: %s",source->toString().c_str());
 
     vector<Rule*> candidate_rules = fcmem.get_rules();
     // init rule weight map needed for tournament seleciton
@@ -122,10 +122,10 @@ Rule DefaultForwardChainerCB::get_grounded_rule(Handle source,FCMemory& fcmem)
         //the conclusions/implicands when we just need to unify with the
         //premises?
         HandleSeq implicand_seq = r->get_implicand_seq();
-        log->fine("Found %i implicand clauses(?)",implicand_seq.size());
-        for (auto clause : implicand_seq) {
-            log->fine(clause->toString().c_str());
-        }
+//        log->fine("Found %i implicand clauses",implicand_seq.size());
+//        for (auto clause : implicand_seq) {
+//            log->fine(clause->toString().c_str());
+//        }
         for(Handle target: implicand_seq)
         {
             HandleSeq derived_r_seq_initial_hmmm = unify(source,target,r);
@@ -137,18 +137,17 @@ Rule DefaultForwardChainerCB::get_grounded_rule(Handle source,FCMemory& fcmem)
         if (derived_rules.size() > 0) {
             log->debug("Found %i substitions",derived_rules.size());
             for (Handle h : derived_rules) {
-                //log->debug("%s\n", h->toShortString().c_str());
+                log->debug("%s\n", h->toShortString().c_str());
             }
             //Randomly choose one of the substitution positions.
             //For now each position has equal weight, but this can be changed
             //to stochastically choose based on weights (e.g., using
             //tournament_select()).
             int random_index = rand() % derived_rules.size();
-            Rule grounded_rule = Rule(derived_rules[random_index]);
-            grounded_rule.set_name(r->get_name());
-            return grounded_rule;
-            //Handle grounded_bl = derived_rules[random_index]
-            //return derived_rules[random_index];
+                log->debug("Choosing substition index %i",random_index);
+            Handle grounded_bl = derived_rules[random_index];
+            string rule_name = r->get_name();
+            return pair<Handle,string>(grounded_bl,rule_name);
         }
 
         else {
@@ -159,7 +158,7 @@ Rule DefaultForwardChainerCB::get_grounded_rule(Handle source,FCMemory& fcmem)
 
     //no rule in rule base unifies with the source
     log->debug("No rule unifies with source.");
-    return Handle::UNDEFINED;
+    return pair<Handle,string>(Handle::UNDEFINED,NULL);
 }
 
 
@@ -329,6 +328,51 @@ Handle DefaultForwardChainerCB::choose_next_source(FCMemory& fcmem)
 
     return hchosen;
 }
+
+HandleSeq DefaultForwardChainerCB::execute_bindlink(Handle blh, FCMemory& fcmem)
+{
+    //temp debug:
+    // Provide a logger
+    Logger * _log = new opencog::Logger("forward_chainer.log",
+                                        Logger::FINE, true);
+
+
+    // this is from previous code in apply_rule - not sure if member var
+    // _fcmem needs to be set here, but it seems not a good place to do so
+    _fcpm.set_fcmem(&fcmem);
+
+    //auto rule_handle = fcmem.get_cur_rule()->get_handle();
+    BindLinkPtr bl(BindLinkCast(blh));
+//    if (NULL == bl) {
+//        bl = createBindLink(*LinkCast(rule_handle));
+//    }
+    _fcpm.implicand = bl->get_implicand();
+    _fcpm.max_results = 1000;
+    _log->debug("Start bl->imply");
+    _log->debug("bl:" );
+    _log->debug(bl->toShortString());
+    bl->imply(_fcpm);
+    _log->debug("End bl->imply");
+    // bl->satisfy(*_fcpm);
+
+    HandleSeq product = _fcpm.get_products();
+
+    //temp debug
+    _log->debug("num of products (old and new): %i", product.size());
+
+
+    //! Make sure the inferences made are new.
+    for (auto iter = product.begin(); iter != product.end();) {
+        //_log->debug((*iter)->toString());
+        if (fcmem.isin_potential_sources(*iter))
+            iter = product.erase(iter);
+        else
+            ++iter;
+    }
+
+    return product;
+}
+
 
 HandleSeq DefaultForwardChainerCB::apply_rule(FCMemory& fcmem)
 {

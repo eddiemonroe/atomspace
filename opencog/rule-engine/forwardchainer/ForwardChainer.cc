@@ -142,14 +142,31 @@ void ForwardChainer::do_step_new(ForwardChainerCallBack& fcb) {
     _log->info("[ForwardChainer] Current source %s",
                cur_source->toShortString().c_str());
 
-    Rule grounded_rule = fcb.get_grounded_rule(cur_source,_fcmem);
-    if (grounded_rule == Handle::UNDEFINED) {
+    pair<Handle,string> grounded_rule = fcb.get_grounded_rule(cur_source,_fcmem);
+    Handle grounded_bl = grounded_rule.first;
+    string rule_name = grounded_rule.second;
+    if (grounded_bl == Handle::UNDEFINED) {
         _log->debug("No rule unifies with current source.");
         return;
     }
 
-    _log->debug("Applying rule: %s",grounded_rule.get_name().c_str());
-    _log->fine("grounded rule: %s",grounded_rule.get_handle()->toShortString().c_str());
+    _log->debug("Applying rule: %s",rule_name.c_str());
+    _log->fine("grounded rule: %s",grounded_bl->toShortString().c_str());
+
+    HandleSeq product = fcb.execute_bindlink(grounded_bl,_fcmem);
+
+    _log->info("Conclusions: %i", product.size());
+    for(const auto& p:product)
+    {
+        _log->info("%s ", p->toShortString().c_str() );
+    }
+
+    //_log->info("[ForwardChainer] updating premise list with the "
+    //                   "inference made");
+    _fcmem.update_potential_sources(product);
+
+    //_log->info("[ForwardChainer] adding inference to history");
+    _fcmem.add_rules_product(_iteration, product);
 
 
 
