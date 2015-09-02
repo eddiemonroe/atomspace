@@ -36,6 +36,18 @@ using namespace opencog;
 
 void PatternLink::common_init(void)
 {
+	locate_defines(_pat.clauses);
+
+	// If there are any defines in the pattern, then all bets are off
+	// as to whether it is connected or not, what's virtual, what isn't.
+	// The analysis will have to be performed at run-time, so we can
+	// skip doing it here.
+	if (0 < _pat.defined_terms.size())
+	{
+		_num_comps = 1;
+		return;
+	}
+
 	validate_clauses(_varlist.varset, _pat.clauses);
 	extract_optionals(_varlist.varset, _pat.clauses);
 
@@ -55,6 +67,9 @@ void PatternLink::common_init(void)
 	get_connected_components(_varlist.varset, _fixed,
 	                         _components, _component_vars);
 	_num_comps = _components.size();
+
+	// Make sure every variable is in some component.
+	check_satisfiability(_varlist.varset, _component_vars);
 
 	// If there is only one connected component, then this can be
 	// handled during search by a single PatternLink. The multi-clause
@@ -78,6 +93,8 @@ void PatternLink::common_init(void)
 /// The second half of the common initialization sequence
 void PatternLink::setup_components(void)
 {
+	if (1 == _num_comps) return;
+
 	// If we are here, then set up a PatternLink for each connected
 	// component.
 	//
@@ -107,16 +124,17 @@ void PatternLink::init(void)
 /* ================================================================= */
 
 /// Special constructor used during just-in-time pattern compilation.
-PatternLink::PatternLink(const Variables& vars, const HandleSeq& cls)
+///
+/// It assumes that the vaiables have already been correctly extracted
+/// from the body, as appropriate.
+PatternLink::PatternLink(const Variables& vars, const Handle& body)
 	: LambdaLink(PATTERN_LINK, HandleSeq())
 {
 	_pat.redex_name = "jit PatternLink";
 
-	// XXX FIXME a hunt for additional variables should be performed
-	// in the clauses: although maybe they should have been declared
-	// already!? Confusing. We are punting for now.
 	_varlist = vars;
-	_pat.clauses = cls;
+	_body = body;
+	unbundle_clauses(_body);
 	common_init();
 	setup_components();
 }
@@ -139,8 +157,10 @@ PatternLink::PatternLink(const std::set<Handle>& vars,
 	// API will need to be changed...
 	// So all we need is the varset, and the subset of the typemap.
 	_varlist.varset = vars;
+	_varlist.varseq.clear();
 	for (const Handle& v : vars)
 	{
+		_varlist.varseq.push_back(v);
 		auto it = typemap.find(v);
 		if (it != typemap.end())
 			_varlist.typemap.insert(*it);
@@ -165,8 +185,12 @@ PatternLink::PatternLink(const std::set<Handle>& vars,
 			}
 		}
 		if (not h_is_opt)
+		{
+			_pat.clauses.push_back(h);
 			_pat.mandatory.push_back(h);
+		}
 	}
+	locate_defines(_pat.clauses);
 
 	// The rest is easy: the evaluatables and the connection map
 	unbundle_virtual(_varlist.varset, _pat.cnf_clauses,
@@ -265,7 +289,13 @@ PatternLink::PatternLink(Link &l)
 void PatternLink::unbundle_clauses(const Handle& hbody)
 {
 	Type t = hbody->getType();
-	if (AND_LINK == t)
+	// For just right now, unpack PresentLink, although that is not
+	// technically correct in the long-run. XXX FIXME In the long run,
+	// nothing should be unpacked, since everything should be run-time
+	// evaluatable. i.e. everything should be a predicate, and that's
+	// that.
+	_pat.body = hbody;
+	if (AND_LINK == t or PRESENT_LINK == t)
 	{
 		_pat.clauses = LinkCast(hbody)->getOutgoingSet();
 	}
@@ -273,6 +303,20 @@ void PatternLink::unbundle_clauses(const Handle& hbody)
 	{
 		// There's just one single clause!
 		_pat.clauses.push_back(hbody);
+	}
+}
+
+void PatternLink::locate_defines(HandleSeq& clauses)
+{
+	for (const Handle& clause: clauses)
+	{
+		FindAtoms fdpn(DEFINED_PREDICATE_NODE, DEFINED_SCHEMA_NODE, true);
+		fdpn.search_set(clause);
+
+		for (const Handle& sh : fdpn.varset)
+		{
+			_pat.defined_terms.insert(sh);
+		}
 	}
 }
 
@@ -311,17 +355,6 @@ void PatternLink::validate_clauses(std::set<Handle>& vars,
 	// We won't (can't) ground variables that don't show up in a
 	// clause.  They are presumably there due to programmer error.
 	// Quoted variables are constants, and so don't count.
-	//
-	// Well, if any clause at all contains a DefinedSchemaNode or
-	// a DefinedPredicateNode, then it could be that all of the
-	// variables appear only in the definition, and the definition
-	// cannot be known until run-time.
-	if (contains_atomtype(clauses, DEFINED_PREDICATE_NODE))
-		return;
-
-	if (contains_atomtype(clauses, DEFINED_SCHEMA_NODE))
-		return;
-
 	for (const Handle& v : vars)
 	{
 		if (not is_unquoted_in_any_tree(clauses, v))
@@ -458,7 +491,7 @@ void PatternLink::unbundle_virtual(const std::set<Handle>& vars,
 // and I'm too lazy to investigate, because an alternate hack is
 // working, at the moment.
 		// If a clause is a variable, we have to make the worst-case
-		// assumption that it is evaulatable, so that we can evaluate
+		// assumption that it is evaluatable, so that we can evaluate
 		// it later.
 		if (VARIABLE_NODE == clause->getType())
 		{
@@ -607,6 +640,35 @@ void PatternLink::make_map_recursive(const Handle& root, const Handle& h)
 	}
 }
 
+/// Make sure that every variable appears in some groundable clause.
+/// Variables have to be grounded before an evaluatable clause
+/// containing them can be evaluated.  If they can never be grounded,
+/// then any clauses in which they appear cannot ever be evaluated,
+/// leading to an undefined condition.  So, explicitly check and throw
+/// an error if a pattern is ill-formed.
+void PatternLink::check_satisfiability(const std::set<Handle>& vars,
+                                       const std::vector<std::set<Handle>>& compvars)
+{
+	// Compute the set-union of all component vars.
+	std::set<Handle> vunion;
+	for (const std::set<Handle>& vset : compvars)
+	{
+		for (const Handle& v : vset)
+			vunion.insert(v);
+	}
+
+	// Is every variable in some component? If not, then throw.
+	for (const Handle& v : vars)
+	{
+		auto it = vunion.find(v);
+		if (vunion.end() == it)
+		{
+			throw InvalidParamException(TRACE_INFO,
+				"Variable not groundable: %s\n", v->toString().c_str());
+		}
+	}
+}
+
 // Hack alert: Definitely it should not be here. Though some refactoring
 // regarding shared libraries circular dependencies (liblambda and libquery)
 // need to be done before fixing...
@@ -628,11 +690,27 @@ void PatternLink::make_term_tree_recursive(const Handle& root,
 	PatternTermPtr ptm(std::make_shared<PatternTerm>(parent, h));
 	parent->addOutgoingTerm(ptm);
 	_pat.connected_terms_map[{h, root}].push_back(ptm);
+
+	Type t = h->getType();
 	LinkPtr l(LinkCast(h));
 	if (l)
 	{
+		if (QUOTE_LINK == t)
+			ptm->addQuote();
+
 		for (const Handle& ho: l->getOutgoingSet())
 		     make_term_tree_recursive(root, ho, ptm);
+		return;
+	}
+
+	// If the current node is a bound variable store this information for
+	// later checks. The flag telling whether the term subtree contains
+	// any bound variable is set by addBoundVariable() method for all terms
+	// on the path up to the root (unless it has been set already).
+	if (VARIABLE_NODE == t && !ptm->isQuoted() &&
+	    _varlist.varset.end() != _varlist.varset.find(h))
+	{
+		ptm->addBoundVariable();
 	}
 }
 

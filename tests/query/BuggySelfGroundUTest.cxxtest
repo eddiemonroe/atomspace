@@ -1,7 +1,7 @@
 /*
- * tests/query/DefineLinkUTest.cxxtest
+ * tests/query/BuggySelfGroundUTest.cxxtest
  *
- * Copyright (C) 2015 Linas Vepstas
+ * Copyright (C) 2015 OpenCog Foundation
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,8 @@
  * along with this program; if not, write to:
  * Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Created by Jacek Świergocki <jswiergo@gmail.com> August 2015
  */
 
 #include <opencog/guile/load-file.h>
@@ -30,14 +32,14 @@
 
 using namespace opencog;
 
-class DefineLinkUTest: public CxxTest::TestSuite
+class BuggySelfGroundUTest: public CxxTest::TestSuite
 {
 private:
         AtomSpace *as;
         SchemeEval* eval;
 
 public:
-    DefineLinkUTest(void)
+    BuggySelfGroundUTest(void)
     {
         logger().setLevel(Logger::DEBUG);
         logger().setPrintToStdoutFlag(true);
@@ -46,7 +48,7 @@ public:
         eval = new SchemeEval(as);
     }
 
-    ~DefineLinkUTest()
+    ~BuggySelfGroundUTest()
     {
         delete eval;
         delete as;
@@ -58,41 +60,36 @@ public:
     void setUp(void);
     void tearDown(void);
 
-    void test_basic(void);
+    void test_crash(void);
 };
 
-void DefineLinkUTest::tearDown(void)
+void BuggySelfGroundUTest::tearDown(void)
 {
     as->clear();
 }
 
-void DefineLinkUTest::setUp(void)
+void BuggySelfGroundUTest::setUp(void)
 {
     as->clear();
     config().set("SCM_PRELOAD",
         "opencog/atomspace/core_types.scm, "
-        "opencog/scm/utilities.scm, "
-        "opencog/scm/opencog/query.scm");
+        "opencog/scm/utilities.scm ");
 
     load_scm_files_from_config(*as);
 }
 
-/*
- * DefineLink most basic unit test.
- */
-void DefineLinkUTest::test_basic(void)
+void BuggySelfGroundUTest::test_crash(void)
 {
     logger().debug("BEGIN TEST: %s", __FUNCTION__);
 
-    config().set("SCM_PRELOAD", "tests/query/define.scm");
+    config().set("SCM_PRELOAD", "tests/query/buggy-selfgnd.scm");
     load_scm_files_from_config(*as);
 
-    Handle items = eval->eval_h("(cog-execute! get-elect)");
-    TS_ASSERT_EQUALS(2, as->get_arity(items));
+    Handle hbnd = eval->eval_h("bnd");
+    TSM_ASSERT("Failed to load test data", Handle::UNDEFINED != hbnd);
 
-    items = eval->eval_h("(cog-execute! get-elect-bound)");
-    TS_ASSERT_EQUALS(2, as->get_arity(items));
+    Handle items = bindlink(as, hbnd);
+    TS_ASSERT_EQUALS(1, as->get_arity(items));
 
-    items = eval->eval_h("(cog-execute! get-parts)");
-    TS_ASSERT_EQUALS(2, as->get_arity(items));
+    logger().debug("END TEST: %s", __FUNCTION__);
 }

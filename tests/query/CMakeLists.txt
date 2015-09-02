@@ -47,11 +47,6 @@ IF (HAVE_GUILE)
 	ADD_CXXTEST(SubstitutionUTest)
 	ADD_CXXTEST(GetLinkUTest)
 
-	# Currently disabled, because these are under consturction;
-	# The BetaRedex has been replaced by PutLink.
-	# longer used by the BindLink/SatsifactionLink
-	# ADD_CXXTEST(BetaRedexUTest)
-	# ADD_CXXTEST(RedexBindUTest)
 	ADD_CXXTEST(GreaterThanUTest)
 	ADD_CXXTEST(GreaterComputeUTest)
 	ADD_CXXTEST(SequenceUTest)
@@ -60,6 +55,7 @@ IF (HAVE_GUILE)
 	ADD_CXXTEST(BuggyLinkUTest)
 	ADD_CXXTEST(BuggyQuoteUTest)
 	ADD_CXXTEST(BuggyEqualUTest)
+	ADD_CXXTEST(BuggySelfGroundUTest)
 	ADD_CXXTEST(ChoiceLinkUTest)
 	ADD_CXXTEST(DefineUTest)
 	ADD_CXXTEST(FiniteStateMachineUTest)
@@ -85,14 +81,14 @@ ADD_CUSTOM_TARGET (qtest
 # Copy files to the build directory.  We do this so that the
 # scheme files can be found no matter where the source directory
 # might be.
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/beta-redex.scm
-    ${PROJECT_BINARY_DIR}/tests/query/beta-redex.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/buggy-crime.scm
     ${PROJECT_BINARY_DIR}/tests/query/buggy-crime.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/buggy-link.scm
     ${PROJECT_BINARY_DIR}/tests/query/buggy-link.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/buggy-stack.scm
     ${PROJECT_BINARY_DIR}/tests/query/buggy-stack.scm)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/buggy-selfgnd.scm
+    ${PROJECT_BINARY_DIR}/tests/query/buggy-selfgnd.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/choice-disconnected.scm
     ${PROJECT_BINARY_DIR}/tests/query/choice-disconnected.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/choice-embed.scm
@@ -109,10 +105,16 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/choice-unary.scm
     ${PROJECT_BINARY_DIR}/tests/query/choice-unary.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/define.scm
     ${PROJECT_BINARY_DIR}/tests/query/define.scm)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/disco-vars.scm
+    ${PROJECT_BINARY_DIR}/tests/query/disco-vars.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/evaluation.scm
     ${PROJECT_BINARY_DIR}/tests/query/evaluation.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/finite-state-machine.scm
     ${PROJECT_BINARY_DIR}/tests/query/finite-state-machine.scm)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/get-link.scm
+    ${PROJECT_BINARY_DIR}/tests/query/get-link.scm)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/get-link-eval.scm
+    ${PROJECT_BINARY_DIR}/tests/query/get-link-eval.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/greater-compute.scm
     ${PROJECT_BINARY_DIR}/tests/query/greater-compute.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/greater_than.scm
