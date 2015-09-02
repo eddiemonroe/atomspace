@@ -23,9 +23,7 @@
 
 ; Load URE configuration (add the current file dir so it can be loaded
 ; from anywhere)
-
-
-(if current-filename (add-to-load-path (dirname (current-filename))))
+(add-to-load-path (dirname (current-filename)))
 (load-from-path "crisp-config.scm")
 
 ; Define knowledge base
