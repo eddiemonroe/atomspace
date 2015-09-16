@@ -105,6 +105,8 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/choice-unary.scm
     ${PROJECT_BINARY_DIR}/tests/query/choice-unary.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/define.scm
     ${PROJECT_BINARY_DIR}/tests/query/define.scm)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/define-schema.scm
+    ${PROJECT_BINARY_DIR}/tests/query/define-schema.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/disco-vars.scm
     ${PROJECT_BINARY_DIR}/tests/query/disco-vars.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/evaluation.scm
@@ -123,6 +125,8 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/match-link.scm
     ${PROJECT_BINARY_DIR}/tests/query/match-link.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/sequence.scm
     ${PROJECT_BINARY_DIR}/tests/query/sequence.scm)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/seq-presence.scm
+    ${PROJECT_BINARY_DIR}/tests/query/seq-presence.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/single.scm
     ${PROJECT_BINARY_DIR}/tests/query/single.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/stackmore-o-o.scm
@@ -135,6 +139,8 @@ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/stackmore-u-u.scm
     ${PROJECT_BINARY_DIR}/tests/query/stackmore-u-u.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/substitution.scm
     ${PROJECT_BINARY_DIR}/tests/query/substitution.scm)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/test_types.scm
+    ${PROJECT_BINARY_DIR}/tests/query/test_types.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/unordered.scm
     ${PROJECT_BINARY_DIR}/tests/query/unordered.scm)
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/tests/query/unordered-more.scm

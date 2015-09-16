@@ -1,5 +1,5 @@
 /*
- * opencog/atoms/reduct/FunctionLink.h
+ * opencog/atoms/core/FunctionLink.h
  *
  * Copyright (C) 2015 Linas Vepstas
  * All Rights Reserved
@@ -24,7 +24,7 @@
 #define _OPENCOG_FUNCTION_LINK_H
 
 #include <opencog/atomspace/AtomSpace.h>
-#include <opencog/atoms/core/FreeLink.h>
+#include <opencog/atoms/core/LambdaLink.h>
 
 namespace opencog
 {
@@ -49,9 +49,10 @@ namespace opencog
  * Note also: EvaluationLinks can be reduced, but they can never be
  * executed (they can only be evaluated).
  */
-class FunctionLink : public FreeLink
+class FunctionLink : public LambdaLink
 {
 protected:
+	void init(void);
 	FunctionLink(Type, const Handle& a,
 	             TruthValuePtr tv = TruthValue::NULL_TV(),
 	             AttentionValuePtr av = AttentionValue::DEFAULT_AV());

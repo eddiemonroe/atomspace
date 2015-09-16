@@ -42,13 +42,12 @@
 #include <opencog/atoms/bind/BindLink.h>
 #include <opencog/atoms/bind/PatternLink.h>
 #include <opencog/atoms/core/DefineLink.h>
+#include <opencog/atoms/core/FunctionLink.h>
 #include <opencog/atoms/core/LambdaLink.h>
 #include <opencog/atoms/core/PutLink.h>
 #include <opencog/atoms/core/VariableList.h>
 #include <opencog/atoms/execution/EvaluationLink.h>
 #include <opencog/atoms/execution/ExecutionOutputLink.h>
-#include <opencog/atoms/reduct/DeleteLink.h>
-#include <opencog/atoms/reduct/FunctionLink.h>
 #include <opencog/util/exceptions.h>
 #include <opencog/util/functional.h>
 #include <opencog/util/Logger.h>
@@ -87,12 +86,23 @@ AtomTable::~AtomTable()
     addedTypeConnection.disconnect();
     Handle::clear_resolver(this);
 
-    // No one who shall look at these atoms ahall ever again
+    // No one who shall look at these atoms shall ever again
     // find a reference to this atomtable.
-    UUID undef = Handle::UNDEFINED.value();
     for (const Handle& h : _atom_set) {
         h->_atomTable = NULL;
-        h->_uuid = undef;
+        h->_uuid = Handle::INVALID_UUID;
+
+        // Aiee ... We added this link to every incoming set;
+        // thus, it is our responsibility to remove it as well.
+        // This is a stinky design, but I see no other way,
+        // because it seems that we can't do this in the Atom
+        // destructor (which is where this should be happening).
+        LinkPtr lll(LinkCast(h));
+        if (lll) {
+            for (AtomPtr a : lll->_outgoing) {
+                a->remove_atom(lll);
+            }
+        }
     }
 }
 
@@ -182,7 +192,7 @@ Handle AtomTable::getHandle(Type t, const HandleSeq &seq) const
 
     std::lock_guard<std::recursive_mutex> lck(_mtx);
     Handle h(linkIndex.getHandle(t, resolved_seq));
-    if (_environ and Handle::UNDEFINED == h)
+    if (_environ and Handle::INVALID_UUID == h.value())
         return _environ->getHandle(t, resolved_seq);
     return h;
 }
@@ -220,7 +230,7 @@ Handle AtomTable::getHandle(const AtomPtr& a) const
 Handle AtomTable::getHandle(Handle& h) const
 {
     // If we have an atom, but don't know the uuid, find uuid.
-    if (Handle::UNDEFINED.value() == h.value())
+    if (Handle::INVALID_UUID == h.value())
         return getHandle(AtomPtr(h));
 
     // If we have both a uuid and pointer, AND the pointer is
@@ -285,6 +295,9 @@ AtomPtr AtomTable::factory(Type atom_type, AtomPtr atom)
     } else if (BIND_LINK == atom_type) {
         if (NULL == BindLinkCast(atom))
             return createBindLink(*LinkCast(atom));
+    } else if (PATTERN_LINK == atom_type) {
+        if (NULL == PatternLinkCast(atom))
+            return createPatternLink(*LinkCast(atom));
     } else if (DEFINE_LINK == atom_type) {
         if (NULL == DefineLinkCast(atom))
             return createDefineLink(*LinkCast(atom));
@@ -343,6 +356,8 @@ static AtomPtr clone_factory(Type atom_type, AtomPtr atom)
     // Links of various kinds -----------
     if (BIND_LINK == atom_type)
         return createBindLink(*LinkCast(atom));
+    if (PATTERN_LINK == atom_type)
+        return createPatternLink(*LinkCast(atom));
     if (DEFINE_LINK == atom_type)
         return createDefineLink(*LinkCast(atom));
 /*
@@ -408,7 +423,7 @@ Handle AtomTable::add(AtomPtr atom, bool async)
     // So we have to accept that, and hope its correct and consistent.
     // XXX this can also occur if the atom is in some other atomspace;
     // so we need to move this check elsewhere.
-    if (atom->_uuid != Handle::UNDEFINED.value())
+    if (atom->_uuid != Handle::INVALID_UUID)
         throw RuntimeException(TRACE_INFO,
           "AtomTable - Attempting to insert atom with handle already set!");
 #endif
@@ -433,27 +448,25 @@ Handle AtomTable::add(AtomPtr atom, bool async)
     Handle hexist(getHandle(atom));
     if (hexist) return hexist;
 
-    // If this atom is in some other atomspace, then we need to clone
-    // it. We cannot insert it into this atomtable as-is.  (We already
-    // know that its not in this atomspace, or its environ.)
-    AtomTable* at = atom->getAtomTable();
-    if (at != NULL) {
-        LinkPtr lll(LinkCast(atom));
-        if (lll) {
-            // Well, if the link was in some other atomspace, then
-            // the outgoing set will probably be too. (It might not
-            // be if the other atomspace is a child of this one).
-            // So we recursively clone that too.
-            HandleSeq closet;
-            for (const Handle& h : lll->getOutgoingSet()) {
-                closet.push_back(add(h, async));
-            }
-            atom = createLink(atom_type, closet,
-                              atom->getTruthValue(),
-                              atom->getAttentionValue());
+    // If this atom is in some other atomspace or not in any atomspace,
+    // then we need to clone it. We cannot insert it into this atomtable
+    // as-is.  (We already know that its not in this atomspace, or its
+    // environ.)
+    LinkPtr lll(LinkCast(atom));
+    if (lll) {
+        // Well, if the link was in some other atomspace, then
+        // the outgoing set will probably be too. (It might not
+        // be if the other atomspace is a child of this one).
+        // So we recursively clone that too.
+        HandleSeq closet;
+        for (const Handle& h : lll->getOutgoingSet()) {
+            closet.push_back(add(h, async));
         }
-        atom = clone_factory(atom_type, atom);
+        atom = createLink(atom_type, closet,
+                          atom->getTruthValue(),
+                          atom->getAttentionValue());
     }
+    atom = clone_factory(atom_type, atom);
 
     // Sometimes one inserts an atom that was previously deleted.
     // In this case, the removal flag might still be set. Clear it.
@@ -464,7 +477,7 @@ Handle AtomTable::add(AtomPtr atom, bool async)
     // no pointers to actual atoms.  We want to have the actual atoms,
     // because later steps need the pointers to do stuff, in particular,
     // to make sure the child atoms are in an atomtable, too.
-    LinkPtr lll(LinkCast(atom));
+    lll = LinkCast(atom);
     if (lll) {
         const HandleSeq& ogs(lll->getOutgoingSet());
         size_t arity = ogs.size();
@@ -483,7 +496,7 @@ Handle AtomTable::add(AtomPtr atom, bool async)
             // UUID but no pointer? Some persistance scenario ???
             // Please explain ...
             if (NULL == h._ptr.get()) {
-                if (Handle::UNDEFINED == h) {
+                if (Handle::INVALID_UUID == h.value()) {
                     prt_diag(atom, i, arity, ogs);
                     throw RuntimeException(TRACE_INFO,
                                "AtomTable - Attempting to insert link with "
@@ -549,7 +562,7 @@ Handle AtomTable::add(AtomPtr atom, bool async)
                 ho->remove_atom(llc);
                 llc->_outgoing[i] = add(ho, async);
             }
-            else if (ho == Handle::UNDEFINED) {
+            else if (ho.value() == Handle::INVALID_UUID) {
                 // If we are here, then the atom is in the atomspace,
                 // but the handle has an invalid UUID. This can happen
                 // if the atom appears more than once in the outgoing
@@ -574,7 +587,7 @@ Handle AtomTable::add(AtomPtr atom, bool async)
     // e.g. if it was fetched from persistent storage; this
     // was done to preserve handle consistency. SavingLoading does
     // this too.  XXX Review SavingLoading for correctness...
-    if (atom->_uuid == Handle::UNDEFINED.value()) {
+    if (atom->_uuid == Handle::INVALID_UUID) {
        // Atom doesn't yet have a valid uuid assigned to it. Ask the TLB
        // to issue a valid uuid.  And then memorize it.
        TLB::addAtom(atom);

@@ -26,15 +26,18 @@
 
 #include "AssignLink.h"
 #include "DeleteLink.h"
-#include "PlusLink.h"
-#include "TimesLink.h"
 
 using namespace opencog;
+
+void FunctionLink::init(void)
+{
+	// extract_variables(_outgoing);
+}
 
 FunctionLink::FunctionLink(Type t, const HandleSeq& oset,
                    TruthValuePtr tv,
                    AttentionValuePtr av)
-    : FreeLink(t, oset, tv, av)
+    : LambdaLink(t, oset, tv, av)
 {
 	if (not classserver().isA(t, FUNCTION_LINK))
 		throw InvalidParamException(TRACE_INFO, "Expecting a FunctionLink");
@@ -44,7 +47,7 @@ FunctionLink::FunctionLink(Type t, const HandleSeq& oset,
 FunctionLink::FunctionLink(Type t, const Handle& a,
                    TruthValuePtr tv,
                    AttentionValuePtr av)
-    : FreeLink(t, a, tv, av)
+    : LambdaLink(t, a, tv, av)
 {
 	if (not classserver().isA(t, FUNCTION_LINK))
 		throw InvalidParamException(TRACE_INFO, "Expecting a FunctionLink");
@@ -54,7 +57,7 @@ FunctionLink::FunctionLink(Type t, const Handle& a,
 FunctionLink::FunctionLink(Type t, const Handle& a, const Handle& b,
                    TruthValuePtr tv,
                    AttentionValuePtr av)
-    : FreeLink(t, a, b, tv, av)
+    : LambdaLink(t, {a, b}, tv, av)
 {
 	if (not classserver().isA(t, FUNCTION_LINK))
 		throw InvalidParamException(TRACE_INFO, "Expecting a FunctionLink");
@@ -62,7 +65,7 @@ FunctionLink::FunctionLink(Type t, const Handle& a, const Handle& b,
 }
 
 FunctionLink::FunctionLink(Link& l)
-    : FreeLink(l)
+    : LambdaLink(l)
 {
 	Type tscope = l.getType();
 	if (not classserver().isA(tscope, FUNCTION_LINK))
@@ -113,13 +116,15 @@ Handle FunctionLink::factory(Type t, const HandleSeq& seq)
 		return Handle(createInsertLink(seq));
 
 	if (PLUS_LINK == t)
-		return Handle(createPlusLink(seq));
+		// return Handle(createPlusLink(seq));
+		throw RuntimeException(TRACE_INFO, "Can't be a factory for this!");
 
 	if (REMOVE_LINK == t)
 		return Handle(createRemoveLink(seq));
 
 	if (TIMES_LINK == t)
-		return Handle(createTimesLink(seq));
+		// return Handle(createTimesLink(seq));
+		throw RuntimeException(TRACE_INFO, "Can't be a factory for this!");
 
 	// XXX FIXME In principle, we should manufacture the
 	// ExecutionOutputLink as well. In practice, we can't, due to a
