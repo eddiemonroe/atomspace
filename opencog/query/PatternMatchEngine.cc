@@ -239,7 +239,7 @@ bool PatternMatchEngine::ordered_compare(const PatternTermPtr& ptm,
                                          const LinkPtr& lp,
                                          const LinkPtr& lg)
 {
-	const PatternTermSeq &osp = ptm->getOutgoingSet();
+	PatternTermSeq osp = ptm->getOutgoingSet();
 	const HandleSeq &osg = lg->getOutgoingSet();
 
 //	size_t oset_sz = osp.size();
@@ -314,7 +314,7 @@ bool PatternMatchEngine::choice_compare(const PatternTermPtr& ptm,
                                         const LinkPtr& lg)
 {
 	const Handle& hp = ptm->getHandle();
-	const PatternTermSeq &osp = ptm->getOutgoingSet();
+	PatternTermSeq osp = ptm->getOutgoingSet();
 
 	// _choice_state lets use resume where we last left off.
 	size_t iend = osp.size();
@@ -549,7 +549,7 @@ bool PatternMatchEngine::unorder_compare(const PatternTermPtr& ptm,
 {
 	const Handle& hp = ptm->getHandle();
 	const HandleSeq& osg = lg->getOutgoingSet();
-	const PatternTermSeq& osp = ptm->getOutgoingSet();
+	PatternTermSeq osp = ptm->getOutgoingSet();
 //	size_t arity = osp.size();
 	size_t osg_size = osg.size();
 	size_t osp_size = osp.size();
@@ -757,13 +757,13 @@ bool PatternMatchEngine::tree_compare(const PatternTermPtr& ptm,
                                       const Handle& hg,
                                       Caller caller)
 {
-	const Handle& hp = ptm->getHandle();
-
 	// This could happen when the arity of the two hypergraphs are different.
 	// It's clearly a mismatch so we should always return false here unless
 	// we are looking for a non-exact match
-	if (Handle::UNDEFINED == hp or Handle::UNDEFINED == hg)
-		return _pmc.fuzzy_match(hp, hg);
+	if (PatternTerm::UNDEFINED == ptm or Handle::UNDEFINED == hg)
+		return _pmc.fuzzy_match(Handle::UNDEFINED, hg);
+
+	const Handle& hp = ptm->getHandle();
 
 	// If the pattern link is a quote, then we compare the quoted
 	// contents. This is done recursively, of course.  The QuoteLink

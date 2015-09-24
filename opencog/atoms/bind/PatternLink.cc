@@ -48,7 +48,7 @@ void PatternLink::common_init(void)
 		return;
 	}
 
-	validate_clauses(_varlist.varset, _pat.clauses);
+	validate_clauses(_varlist.varset, _pat.clauses, _pat.constants);
 	extract_optionals(_varlist.varset, _pat.clauses);
 
 	// Locate the black-box clauses.
@@ -117,6 +117,15 @@ void PatternLink::init(void)
 {
 	_pat.redex_name = "anonymous PatternLink";
 	extract_variables(_outgoing);
+
+	if (2 < _outgoing.size() or
+	   (2 == _outgoing.size() and _outgoing[1] != _body))
+	{
+		throw InvalidParamException(TRACE_INFO,
+		      "Expecting (optional) variable decls and a body; got %s",
+		      toString().c_str());
+	}
+
 	unbundle_clauses(_body);
 	common_init();
 	setup_components();
@@ -126,7 +135,7 @@ void PatternLink::init(void)
 
 /// Special constructor used during just-in-time pattern compilation.
 ///
-/// It assumes that the vaiables have already been correctly extracted
+/// It assumes that the variables have already been correctly extracted
 /// from the body, as appropriate.
 PatternLink::PatternLink(const Variables& vars, const Handle& body)
 	: LambdaLink(PATTERN_LINK, HandleSeq())
@@ -370,7 +379,8 @@ void PatternLink::locate_defines(HandleSeq& clauses)
  * that are constants and can be trivially discarded.
  */
 void PatternLink::validate_clauses(std::set<Handle>& vars,
-                                   HandleSeq& clauses)
+                                   HandleSeq& clauses,
+                                   HandleSeq& constants)
 
 {
 	// The Fuzzy matcher does some strange things: it declares no
@@ -385,7 +395,7 @@ void PatternLink::validate_clauses(std::set<Handle>& vars,
 		// The presence of constant clauses will mess up the current
 		// pattern matcher.  Constant clauses are "trivial" to match,
 		// and so its pointless to even send them through the system.
-		bool bogus = remove_constants(vars, clauses);
+		bool bogus = remove_constants(vars, clauses, constants);
 		if (bogus)
 		{
 			logger().warn("%s: Constant clauses removed from pattern",
