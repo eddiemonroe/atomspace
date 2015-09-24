@@ -85,7 +85,9 @@ void ForwardChainerUTest::test_do_chain()
 	std::cout << "do_chain results:" << std::endl;
 	for (Handle h : results)
 		std::cout << h->toString() << std::endl;
-
+	if (results.size() == 0) {
+		cout << "no results";
+	};
 	// Check that AC is in the results
 	Handle AC = as_.add_link(IMPLICATION_LINK, A, C);
 	TS_ASSERT_DIFFERS(find(results.begin(), results.end(), AC), results.end());
