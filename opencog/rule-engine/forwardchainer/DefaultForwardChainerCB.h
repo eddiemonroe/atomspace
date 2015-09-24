@@ -60,7 +60,7 @@ public:
     std::map<Handle,std::vector<Handle> > rule_derivations;
 
     pair<Handle, string> get_grounded_rule(Handle source, FCMemory &fcmem);
-    HandleSeq execute_bindlink(Handle blh, FCMemory& fcmem);
+    HandleSeq evaluate_bindlink(Handle blh, FCMemory &fcmem);
 };
 
 } // ~namespace opencog

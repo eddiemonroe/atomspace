@@ -136,8 +136,11 @@ pair<Handle,string> DefaultForwardChainerCB::get_grounded_rule(Handle source,FCM
 
         if (derived_rules.size() > 0) {
             log->debug("Found %i substitions",derived_rules.size());
+            int i = 0;
             for (Handle h : derived_rules) {
+                log->debug("Substitution %i",i);
                 log->debug("%s\n", h->toShortString().c_str());
+                i++;
             }
             //Randomly choose one of the substitution positions.
             //For now each position has equal weight, but this can be changed
@@ -329,7 +332,8 @@ Handle DefaultForwardChainerCB::choose_next_source(FCMemory& fcmem)
     return hchosen;
 }
 
-HandleSeq DefaultForwardChainerCB::execute_bindlink(Handle blh, FCMemory& fcmem)
+HandleSeq DefaultForwardChainerCB::evaluate_bindlink(Handle blh,
+                                                     FCMemory &fcmem)
 {
     //temp debug:
     // Provide a logger
@@ -343,10 +347,23 @@ HandleSeq DefaultForwardChainerCB::execute_bindlink(Handle blh, FCMemory& fcmem)
 
     //auto rule_handle = fcmem.get_cur_rule()->get_handle();
     BindLinkPtr bl(BindLinkCast(blh));
-//    if (NULL == bl) {
-//        bl = createBindLink(*LinkCast(rule_handle));
-//    }
+    if (NULL == bl) {
+
+        bl = createBindLink(*LinkCast(blh));
+        _log->debug("Found NULL bl, using alternative bl creation method");
+        //bl = createBindLink(*LinkCast(rule_handle));
+    }
+
+    _log->debug("evaluate_bindlink(), bl:");
+    _log->debug(bl->toShortString().c_str());
+
     _fcpm.implicand = bl->get_implicand();
+    _log->debug("implicand: " );
+    _log->debug(_fcpm.implicand->toString().c_str());
+
+    _as.add_atom(bl->get_implicand());
+    _as.add_atom(bl->get_body());
+
     _fcpm.max_results = 1000;
     _log->debug("Start bl->imply");
     _log->debug("bl:" );
@@ -388,10 +405,13 @@ HandleSeq DefaultForwardChainerCB::apply_rule(FCMemory& fcmem)
         bl = createBindLink(*LinkCast(rule_handle));
     }
     _fcpm.implicand = bl->get_implicand();
+    _log->debug("implicand: " );
+    _log->debug(_fcpm.implicand->toString().c_str());
     _fcpm.max_results = 1000;
     _log->debug("Start bl->imply");
     _log->debug("bl:" );
     _log->debug(bl->toShortString());
+
     bl->imply(_fcpm);
     _log->debug("End bl->imply");
     // bl->satisfy(*_fcpm);

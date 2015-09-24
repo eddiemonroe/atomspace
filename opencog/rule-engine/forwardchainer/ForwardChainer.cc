@@ -152,8 +152,8 @@ void ForwardChainer::do_step_new(ForwardChainerCallBack& fcb) {
 
     _log->debug("Applying rule: %s",rule_name.c_str());
     _log->fine("grounded rule: %s",grounded_bl->toShortString().c_str());
-
-    HandleSeq product = fcb.execute_bindlink(grounded_bl,_fcmem);
+grounded_bl = _as.add_atom(grounded_bl);
+    HandleSeq product = fcb.evaluate_bindlink(grounded_bl, _fcmem);
 
     _log->info("Conclusions: %i", product.size());
     for(const auto& p:product)
@@ -521,6 +521,7 @@ void ForwardChainer::do_chain(ForwardChainerCallBack& fcb,
     while (_iteration < max_iter /*OR other termination criteria*/) {
         _log->info("Iteration %d", _iteration);
 
+//        do_step(fcb);
         do_step_new(fcb);
 
         //! Choose next source.

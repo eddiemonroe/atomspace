@@ -83,7 +83,7 @@ public:
     virtual pair<Handle,string> get_grounded_rule(Handle source,
                                                   FCMemory& fcmem) = 0;
 
-    virtual HandleSeq execute_bindlink(Handle blh, FCMemory& fcmem) = 0;
+    virtual HandleSeq evaluate_bindlink(Handle blh, FCMemory &fcmem) = 0;
 
 };
 
