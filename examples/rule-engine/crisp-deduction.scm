@@ -23,7 +23,8 @@
 
 ; Load URE configuration (add the current file dir so it can be loaded
 ; from anywhere)
-(add-to-load-path (dirname (current-filename)))
+(if (current-filename)
+    (add-to-load-path (dirname (current-filename))))
 (load-from-path "crisp-deduction-config.scm")
 
 ; Define knowledge base
