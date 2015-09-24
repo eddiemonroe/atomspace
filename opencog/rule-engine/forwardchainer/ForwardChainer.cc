@@ -139,6 +139,7 @@ Logger* ForwardChainer::getLogger()
  *
  * @param fcb a concrete implementation of of ForwardChainerCallBack class
  */
+/*  needs to be refactored without ForwardChainerCallBack class which has benn removed
 void ForwardChainer::do_step_new(ForwardChainerCallBack& fcb) {
 
     Handle cur_source = _fcmem.get_cur_source();
@@ -179,7 +180,7 @@ grounded_bl = _as.add_atom(grounded_bl);
 
 
 }
-
+*/
 
 /**
  * Does one step forward chaining
@@ -275,6 +276,7 @@ UnorderedHandleSet ForwardChainer::do_step(bool search_focus_set/* = false*/)
  *
  * @param fcb a concrete implementation of of ForwardChainerCallBack class
  */
+/* needs to be refactored without FCCallBack class
 void ForwardChainer::do_step_bio(ForwardChainerCallBack& fcb)
 {
     _log->fine("FowardChainer::do_step_bio()");
@@ -321,10 +323,6 @@ void ForwardChainer::do_step_bio(ForwardChainerCallBack& fcb)
 //        return false;
 //    }
 
-    /*
-     * choose rule(s)
-     * match premises
-     */
 
     //crashing
     //current_source = choose_source();
@@ -511,6 +509,8 @@ void ForwardChainer::do_step_bio(ForwardChainerCallBack& fcb)
 //    _fcmem.add_rules_product(_iteration, product);
 }
 
+*/
+
 
 void ForwardChainer::do_chain(Handle hsource, HandleSeq focus_set)
 {
@@ -575,9 +575,9 @@ void ForwardChainer::do_chain(Handle hsource, HandleSeq focus_set)
     _log->debug("[ForwardChainer] finished forwarch chaining.");
 }
 
-
+/* need to refactor without FCCallBack class
 void ForwardChainer::do_chain_bio(ForwardChainerCallBack& fcb,
-                              Handle hsource/*=Handle::UNDEFINED*/)
+                              Handle hsource)
 {
     if (hsource == Handle::UNDEFINED) {
         do_pm();
@@ -593,7 +593,7 @@ void ForwardChainer::do_chain_bio(ForwardChainerCallBack& fcb,
     _fcmem.set_source(hsource); //set initial source
     _fcmem.update_potential_sources(HandleSeq{hsource});
 
-    while (_iteration < max_iter /*OR other termination criteria*/) {
+    while (_iteration < max_iter ) { // OR other termination criteria) {
         _log->info("Iteration %d", _iteration);
 
         do_step_bio(fcb);
@@ -608,7 +608,7 @@ void ForwardChainer::do_chain_bio(ForwardChainerCallBack& fcb,
     _log->info("[ForwardChainer] finished do_chain.");
 }
 
-
+*/
 
 /**
  * Does pattern matching for a variable containing query.
@@ -1163,4 +1163,3 @@ Handle ForwardChainer::gen_sub_varlist(const Handle& parent,
 
     return Handle(createVariableList(final_oset));
 }
->>>>>>> d8f214d24ce588c84eaf86d555dba1dc5c8e6e22

@@ -51,7 +51,6 @@ private:
 	//specialized function for bio project
 	Handle do_forward_chaining_bio(Handle h, Handle rbs);
 
-	/**
     Handle do_forward_chaining(Handle hsource, Handle rbs, Handle hfocus_set);
 
     /**

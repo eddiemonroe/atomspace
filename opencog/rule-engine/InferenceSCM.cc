@@ -130,7 +130,7 @@ Handle InferenceSCM::do_forward_chaining_bio(Handle h, Handle rbs)
 #ifdef HAVE_GUILE
     cout << "Inside HAVE_GUILE" << endl;
     AtomSpace *as = SchemeSmob::ss_get_env_as("cog-fc");
-    DefaultForwardChainerCB dfc(*as);
+//    DefaultForwardChainerCB dfc(*as);
     cout << "Creating ForwardChainer" << endl;
     ForwardChainer fc(*as, rbs);
     cout << "FC creation complete" << endl;
@@ -142,7 +142,9 @@ Handle InferenceSCM::do_forward_chaining_bio(Handle h, Handle rbs)
      * with the python version of the forward chainer.
      */
     if (h->getType() == LIST_LINK and as->get_outgoing(h).empty())
-        fc.do_chain(dfc, Handle::UNDEFINED);
+        // need to refactor
+	//fc.do_chain(h, Handle::UNDEFINED);
+	(void)h; //dummy statement 
     else
         /** Does variable fulfillment forward chaining or forward chaining based on
          *  target node @param h.
@@ -152,10 +154,12 @@ Handle InferenceSCM::do_forward_chaining_bio(Handle h, Handle rbs)
          *  and (cog-fc (ConceptNode "Human")) will start forward chaining on the concept Human
          *  trying to generate inferences associated only with the conceptNode Human.
          */
-        fc.do_chain_bio(dfc, h);
+        //fc.do_chain_bio(dfc, h);
 
     HandleSeq result = fc.get_conclusions();
-    return as->add_link(LIST_LINK, result);
+    // need to refactor
+    //return as->add_link(LIST_LINK, result);
+    return Handle::UNDEFINED; // filler statement
 #else
     return Handle::UNDEFINED;
 #endif

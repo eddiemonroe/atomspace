@@ -134,11 +134,11 @@ public:
 	 */
     ForwardChainer(AtomSpace& as, Handle rbs);
 
-    void do_chain_bio(ForwardChainerCallBack& fcb,
-                      Handle hsource = Handle::UNDEFINED);
+    //void do_chain_bio(ForwardChainerCallBack& fcb,
+    //                  Handle hsource = Handle::UNDEFINED);
     HandleSeq get_conclusions();
-    void do_step(ForwardChainerCallBack& fcb);
-    void do_step_bio(ForwardChainerCallBack& fcb);
+    // void do_step(ForwardChainerCallBack& fcb);
+    // void do_step_bio(ForwardChainerCallBack& fcb);
 
     void do_chain(Handle hsource,HandleSeq focus_set ={});
 
@@ -147,7 +147,7 @@ public:
     void setLogger(Logger* log);
     Logger* getLogger(void);
 
-    void do_step_new(ForwardChainerCallBack&);
+    //void do_step_new(ForwardChainerCallBack&);
 
 
 };
