@@ -35,7 +35,7 @@ const std::string UREConfigReader::max_iter_name = "URE:maximum-iterations";
 
 UREConfigReader::UREConfigReader(AtomSpace& as, Handle rbs) : _as(as)
 {
-	cout << "UREConfigReader()" << endl;
+	//cout << "UREConfigReader()" << endl;
 	if (Handle::UNDEFINED == rbs)
 		throw RuntimeException(TRACE_INFO,
 			"UREConfigReader - invalid rulebase specified!");
@@ -43,13 +43,13 @@ UREConfigReader::UREConfigReader(AtomSpace& as, Handle rbs) : _as(as)
 	// Retrieve the rules (MemberLinks) and instantiate them
 	for (Handle rule : fetch_rules(rbs))
 		_rbparams.rules.emplace_back(rule);
-cout << "rules retrieved" << endl;
+//cout << "rules retrieved" << endl;
 	// Fetch maximum number of iterations
 	_rbparams.max_iter = fetch_num_param(max_iter_name, rbs);
 
 	// Fetch attention allocation parameter
 	_rbparams.attention_alloc = fetch_bool_param(attention_alloc_name, rbs);
-	cout << "UREConfigReader() end" << endl;
+	//cout << "UREConfigReader() end" << endl;
 }
 
 const std::vector<Rule>& UREConfigReader::get_rules() const

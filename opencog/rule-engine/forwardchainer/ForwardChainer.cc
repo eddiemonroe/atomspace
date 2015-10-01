@@ -43,7 +43,7 @@ int MAX_PM_RESULTS = 10000;
 ForwardChainer::ForwardChainer(AtomSpace& as, Handle rbs) :
         _as(as), _rec(as), _rbs(rbs), _configReader(as, rbs), _fcmem(&as)
 {
-    cout << "ForwardChainer::ForwardChainer()" << endl;
+    //cout << "ForwardChainer::ForwardChainer()" << endl;
     init();
 }
 
@@ -55,7 +55,7 @@ const char * getFormulaName(Rule *rule) {
 void ForwardChainer::init()
 {
 
-    cout << "ForwardChainer::init()" << endl;
+    //cout << "ForwardChainer::init()" << endl;
 
     _fcmem.set_search_in_af(_configReader.get_attention_allocation());
     _fcmem.set_rules(_configReader.get_rules());
@@ -75,7 +75,7 @@ void ForwardChainer::init()
         //_log->debug(NodeCast((LinkCast(rule->get_implicand()))->getOutgoingSet()[0])->getName());     //toShortString().c_str()); //toString().c_str());
     }
 
-    cerr << "logger stuff to fc.log should have happened above" << endl;
+    //cerr << "logger stuff to fc.log should have happened above" << endl;
 }
 
 

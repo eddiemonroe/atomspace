@@ -55,7 +55,7 @@ public:
     virtual bool grounding(const std::map<Handle, Handle> &var_soln,
                            const std::map<Handle, Handle> &term_soln)
     {
-        std::cout << "RESULT" << std::endl;
+        //std::cout << "RESULT" << std::endl;
 
         Handle h = _inst->instantiate(implicand, var_soln);
 
