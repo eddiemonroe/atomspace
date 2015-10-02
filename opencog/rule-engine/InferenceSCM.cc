@@ -100,7 +100,7 @@ Handle do_forward_chaining(AtomSpace* as,
     return Handle::UNDEFINED;
 #endif
 }
-
+/*
 Handle InferenceSCM::do_forward_chaining_bio(Handle h, Handle rbs)
 {
     cout << "IferenceSCM::do_fowrad_chaining_bio" << endl;
@@ -118,6 +118,8 @@ Handle InferenceSCM::do_forward_chaining_bio(Handle h, Handle rbs)
      * using the rules declared in the config. A similar functionality
      * with the python version of the forward chainer.
      */
+/**/
+/*
     if (h->getType() == LIST_LINK and as->get_outgoing(h).empty())
         // need to refactor
 	//fc.do_chain(h, Handle::UNDEFINED);
@@ -131,6 +133,7 @@ Handle InferenceSCM::do_forward_chaining_bio(Handle h, Handle rbs)
          *  and (cog-fc (ConceptNode "Human")) will start forward chaining on the concept Human
          *  trying to generate inferences associated only with the conceptNode Human.
          */
+/**/ /*
         //fc.do_chain_bio(dfc, h);
 
     HandleSeq result = fc.get_conclusions();
@@ -141,6 +144,7 @@ Handle InferenceSCM::do_forward_chaining_bio(Handle h, Handle rbs)
     return Handle::UNDEFINED;
 #endif
 }
+*/
 
 Handle do_backward_chaining(AtomSpace* as,
                             const Handle& h,
