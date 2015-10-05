@@ -60,7 +60,6 @@ private:
     Handle _cur_source;
     HandleSeq _selected_sources;
 
-<<<<<<< HEAD
     //special for bio project
     set<Handle> conclusions;
 
@@ -69,12 +68,11 @@ private:
      * initialize config methods
      */
     
-
+/* old bio
     void init();
     void add_to_source_list(Handle h);
-=======
+*/
     FCStat _fcstat;
->>>>>>> 8c432c7441710435774b99f41eeb33d61934e2e7
 
     void init(Handle hsource, HandleSeq focus_set);
     void setLogger(Logger* log);
@@ -152,8 +150,8 @@ public:
     HandleSeq get_chaining_result(void);
 
 
-    void setLogger(Logger* log);
-    Logger* getLogger(void);
+    //void setLogger(Logger* log);
+    //Logger* getLogger(void);
 
     //void do_step_new(ForwardChainerCallBack&);
 

@@ -108,28 +108,25 @@ Handle InferenceSCM::do_forward_chaining_bio(Handle h, Handle rbs)
     ForwardChainer fc(*as, rbs);
     cout << "FC creation complete" << endl;
 
-    /**
+    **
      * Parse (cog-fc ListLink()) as forward chaining with
      * Handle::UNDEFINED which does pattern matching on the atomspace
      * using the rules declared in the config. A similar functionality
      * with the python version of the forward chainer.
-     */
-/**/
-/*
+     *
     if (h->getType() == LIST_LINK and as->get_outgoing(h).empty())
         // need to refactor
 	//fc.do_chain(h, Handle::UNDEFINED);
 	(void)h; //dummy statement 
     else
-        /** Does variable fulfillment forward chaining or forward chaining based on
+        ** Does variable fulfillment forward chaining or forward chaining based on
          *  target node @param h.
          *  example (cog-fc (InheritanceLink (VariableNode "$X") (ConceptNode "Human")))
          *  finds all the matches for $X by first finding matching rules and then applying
          *  all of them using the pattern matcher.
          *  and (cog-fc (ConceptNode "Human")) will start forward chaining on the concept Human
          *  trying to generate inferences associated only with the conceptNode Human.
-         */
-/**/ /*
+         *
         //fc.do_chain_bio(dfc, h);
 
     HandleSeq result = fc.get_conclusions();

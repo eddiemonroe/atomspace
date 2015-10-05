@@ -109,14 +109,14 @@ void ForwardChainer::init(Handle hsource, HandleSeq focus_set)
     _log = NULL;
     setLogger(new opencog::Logger("forward_chainer.log", Logger::FINE, true));
     
-    //temp code for debugging rules
+/*    //temp code for debugging rules
     _log->debug("All FC Rules:");
     for (Rule* rule : _fcmem.get_rules()) {
         _log->debug(rule->get_name().c_str());
         //_log->debug(getFormulaName(rule));
         //_log->debug(NodeCast((LinkCast(rule->get_implicand()))->getOutgoingSet()[0])->getName());     //toShortString().c_str()); //toString().c_str());
     }
-
+*/
     //cerr << "logger stuff to fc.log should have happened above" << endl;
 }
 
@@ -275,10 +275,9 @@ void ForwardChainer::do_step(void)
 
     _log->debug( "Derived rule size = %d", derived_rhandles.size());
 
-<<<<<<< HEAD
-    UnorderedHandleSet products;
-
 /* more my stuff i tried
+
+    UnorderedHandleSet products;
 
     //! Apply rule.
     _log->debug("[ForwardChainer] Applying chosen rule %s",
@@ -298,10 +297,8 @@ void ForwardChainer::do_step(void)
         _log->info("%s ", p->toShortString().c_str() );
 */
 
-=======
     HandleSeq products;
     //Applying all partial/full groundings.
->>>>>>> 8c432c7441710435774b99f41eeb33d61934e2e7
     for (Handle rhandle : derived_rhandles) {
         HandleSeq hs;
         //Check for fully grounded outputs returned by derive_rules.
@@ -326,7 +323,6 @@ void ForwardChainer::do_step(void)
 
 }
 
-<<<<<<< HEAD
 /**
  * Specialized stepper for bio project
  * Does one step forward chaining applying all rules
@@ -566,13 +562,13 @@ void ForwardChainer::do_step_bio(ForwardChainerCallBack& fcb)
 //    _fcmem.add_rules_product(_iteration, product);
 }
 
-*/
+
 
 
 void ForwardChainer::do_chain(Handle hsource, HandleSeq focus_set)
-=======
+*/
+
 void ForwardChainer::do_chain(void)
->>>>>>> 8c432c7441710435774b99f41eeb33d61934e2e7
 {
     //Relex2Logic uses this.TODO make a separate class
     //to handle this robustly.
@@ -585,7 +581,7 @@ void ForwardChainer::do_chain(void)
     auto max_iter = _configReader.get_maximum_iterations();
 
     while (_iteration < max_iter /*OR other termination criteria*/) {
-<<<<<<< HEAD
+/* old bio
 
         //do_step_new(fcb);
         
@@ -603,10 +599,9 @@ void ForwardChainer::do_chain(void)
         _fcmem.update_potential_sources(
                 HandleSeq(products.begin(), products.end()));
 
-=======
+*/
         _log->debug("Iteration %d", _iteration);
          do_step();
->>>>>>> 8c432c7441710435774b99f41eeb33d61934e2e7
         _iteration++;
     }
 
@@ -714,6 +709,7 @@ HandleSeq ForwardChainer::get_chaining_result()
     return _fcstat.get_all_inferences();
 }
 
+/*
 HandleSeq ForwardChainer::get_conclusions()
 {
     HandleSeq result;
@@ -724,6 +720,7 @@ HandleSeq ForwardChainer::get_conclusions()
 
     return result;
 }
+*/
 
 Rule* ForwardChainer::choose_rule(Handle hsource, bool subatom_match)
 {
