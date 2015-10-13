@@ -24,10 +24,12 @@
 #include <opencog/atomspace/AtomSpace.h>
 #include <opencog/atomspace/SimpleTruthValue.h>
 #include <opencog/atoms/NumberNode.h>
+#include <opencog/atoms/core/DefineLink.h>
 #include <opencog/atoms/execution/Instantiator.h>
 #include <opencog/atoms/reduct/FoldLink.h>
 #include <opencog/cython/PythonEval.h>
 #include <opencog/guile/SchemeEval.h>
+#include <opencog/query/BindLinkAPI.h>
 #include "EvaluationLink.h"
 
 using namespace opencog;
@@ -162,9 +164,40 @@ TruthValuePtr EvaluationLink::do_evaluate(AtomSpace* as, Handle evelnk)
 		return SimpleTruthValue::createTV(
 		              1.0 - tv->getMean(), tv->getCount());
 	}
-	throw RuntimeException(TRACE_INFO,
-		"Expecting to get an EvaluationLink, got %s",
-		evelnk->toString().c_str());
+	else if (TRUE_LINK == t)
+	{
+		// Assume that the link is wrapping something executable,
+		// which we execute, but then ignore the result.
+		LinkPtr ll(LinkCast(evelnk));
+		Instantiator inst(as);
+		inst.execute(ll->getOutgoingAtom(0));
+		return TruthValue::TRUE_TV();
+	}
+	else if (FALSE_LINK == t)
+	{
+		// Assume that the link is wrapping something executable,
+		// which we execute, but then ignore the result.
+		LinkPtr ll(LinkCast(evelnk));
+		Instantiator inst(as);
+		inst.execute(ll->getOutgoingAtom(0));
+		return TruthValue::FALSE_TV();
+	}
+	else if (SATISFACTION_LINK == t)
+	{
+		return satisfaction_link(as, evelnk);
+	}
+	else if (DEFINED_PREDICATE_NODE == t)
+	{
+		return do_evaluate(as, DefineLink::get_definition(evelnk));
+	}
+
+	// We do not want to waste CPU time printing an exception message;
+	// this is supposed to be handled automatically.  Hmmm... unless
+	// its a user Syntax error ....
+	throw NotEvaluatableException();
+	// throw SyntaxException(TRACE_INFO,
+		// "Expecting to get an EvaluationLink, got %s",
+		// evelnk->toString().c_str());
 }
 
 /// do_evaluate -- evaluate the GroundedPredicateNode of the EvaluationLink

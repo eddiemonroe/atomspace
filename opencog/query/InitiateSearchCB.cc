@@ -23,10 +23,10 @@
 
 #include <opencog/atomspace/AtomSpace.h>
 
-#include <opencog/atoms/bind/PatternLink.h>
 #include <opencog/atoms/core/DefineLink.h>
 #include <opencog/atoms/core/LambdaLink.h>
 #include <opencog/atoms/execution/EvaluationLink.h>
+#include <opencog/atoms/pattern/PatternLink.h>
 #include <opencog/atomutils/FindUtils.h>
 #include <opencog/atomutils/Substitutor.h>
 
@@ -113,8 +113,10 @@ InitiateSearchCB::find_starter(const Handle& h, size_t& depth,
 {
 	// If its a node, then we are done.
 	Type t = h->getType();
-	if (_classserver.isNode(t)) {
-		if (t != VARIABLE_NODE) {
+	if (_classserver.isNode(t))
+	{
+		if (VARIABLE_NODE != t and GLOB_NODE != t)
+		{
 			width = h->getIncomingSetSize();
 			startrm = h; // XXX wtf ???
 			return h;
@@ -133,8 +135,10 @@ InitiateSearchCB::find_starter_recursive(const Handle& h, size_t& depth,
 	// If its a node, then we are done. Don't modify either depth or
 	// start.
 	Type t = h->getType();
-	if (_classserver.isNode(t)) {
-		if (t != VARIABLE_NODE) {
+	if (_classserver.isNode(t))
+	{
+		if (VARIABLE_NODE != t and GLOB_NODE != t)
+		{
 			width = h->getIncomingSetSize();
 			return h;
 		}
@@ -198,7 +202,7 @@ InitiateSearchCB::find_starter_recursive(const Handle& h, size_t& depth,
 /* ======================================================== */
 /**
  * Iterate over all the clauses, to find the "thinnest" one.
- * Skip any/all evaluatable clauses, as thes typically do not
+ * Skip any/all evaluatable clauses, as these typically do not
  * exist in the atomspace, anyway.
  */
 Handle InitiateSearchCB::find_thinnest(const HandleSeq& clauses,
@@ -263,10 +267,22 @@ Handle InitiateSearchCB::find_thinnest(const HandleSeq& clauses,
 bool InitiateSearchCB::neighbor_search(PatternMatchEngine *pme)
 {
 	// Sometimes, the number of mandatory clauses can be zero...
-	// We still want to search, though.
+	// or they might all be evaluatable.  In this case, its OK to
+	// start searching with an optional clause. But if there ARE
+	// mandatories, we must NOT start serch on an optional, since,
+	// after all, it might be absent!
+	bool try_all = true;
+	for (const Handle& m : _pattern->mandatory)
+	{
+		if (0 == _pattern->evaluatable_holders.count(m))
+		{
+			try_all = false;
+			break;
+		}
+	}
+
 	const HandleSeq& clauses =
-		(0 < _pattern->mandatory.size()) ?
-			 _pattern->mandatory : _pattern->cnf_clauses;
+		try_all ?  _pattern->cnf_clauses :  _pattern->mandatory;
 
 	// In principle, we could start our search at some node, any node,
 	// that is not a variable. In practice, the search begins by
