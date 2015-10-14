@@ -138,6 +138,10 @@ bool DefaultPatternMatchCB::link_match(const LinkPtr& lpat,
 	Type pattype = lpat->getType();
 	if (CHOICE_LINK == pattype) return true;
 
+	// If types differ, no match
+	Type soltype = lsoln->getType();
+	if (pattype != soltype) return false;
+
 	// Reject mis-sized compares, unless the pattern has a glob in it.
 	if (0 == _globs->count(lpat->getHandle()))
 	{ 
@@ -148,9 +152,8 @@ bool DefaultPatternMatchCB::link_match(const LinkPtr& lpat,
 		if (lpat->getArity() > lsoln->getArity()) return false;
 	}
 
-	// If types differ, no match
-	Type soltype = lsoln->getType();
-	return pattype == soltype;
+	// No reason to reject; proceed with the compare.
+	return true;
 }
 
 bool DefaultPatternMatchCB::post_link_match(const LinkPtr& lpat,
@@ -227,7 +230,7 @@ bool DefaultPatternMatchCB::clause_match(const Handle& ptrn,
 		// default callback ignores the TV on EvaluationLinks. So this
 		// is kind-of schizophrenic here.  Not sure what else to do.
 		_temp_aspace.clear();
-		TruthValuePtr tvp(EvaluationLink::do_evaluate(&_temp_aspace, grnd));
+		TruthValuePtr tvp(EvaluationLink::do_eval_scratch(_as, grnd, &_temp_aspace));
 
 		LAZY_LOG_FINE << "Clause_match evaluation yeilded tv"
 		              << std::endl << tvp->toString() << std::endl;
@@ -330,7 +333,7 @@ bool DefaultPatternMatchCB::eval_term(const Handle& virt,
 		_temp_aspace.clear();
 		try
 		{
-			tvp = EvaluationLink::do_evaluate(&_temp_aspace, gvirt);
+			tvp = EvaluationLink::do_eval_scratch(_as, gvirt, &_temp_aspace);
 		}
 		catch (const NotEvaluatableException& ex)
 		{
