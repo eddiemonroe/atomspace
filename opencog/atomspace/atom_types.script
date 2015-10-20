@@ -339,7 +339,6 @@ ARITHMETIC_LINK <- FOLD_LINK
 PLUS_LINK <- ARITHMETIC_LINK
 TIMES_LINK <- ARITHMETIC_LINK
 
-<<<<<<< HEAD
 // Adding custom link types for bio
 // Should NOT be pushed to main opencog project
 GENE_NODE <- CONCEPT_NODE
