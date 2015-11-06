@@ -118,18 +118,19 @@ Handle Instantiator::walk_tree(const Handle& expr)
 	if (PUT_LINK == t)
 	{
 		PutLinkPtr ppp(PutLinkCast(expr));
+		if (nullptr == ppp)
+			ppp = createPutLink(*lexpr);
 
-		// PutLinks always have arity two. There may be free vars in
-		// the body of the PutLink, but we won't substitue for them until
-		// after the beta-reduction.  Do substitute the free vars that
-		// occur in the argument, and do that before beta-reduction.
+		// Execute the values in the PutLink before doing the beta-reduction.
 		// Execute the body only after the beta-reduction has been done.
-		const HandleSeq& oset = lexpr->getOutgoingSet();
-		Handle gargs = walk_tree(oset[1]);
-		if (gargs != oset[1])
+		Handle pvals = ppp->get_values();
+		Handle gargs = walk_tree(pvals);
+		if (gargs != pvals)
 		{
 			HandleSeq groset;
-			groset.emplace_back(oset[0]);
+			if (ppp->get_vardecl())
+				groset.emplace_back(ppp->get_vardecl());
+			groset.emplace_back(ppp->get_body());
 			groset.emplace_back(gargs);
 			ppp = createPutLink(groset);
 		}
@@ -143,7 +144,7 @@ Handle Instantiator::walk_tree(const Handle& expr)
 		// Step three: XXX this is awkward, but seems to be needed...
 		// If the result is evaluatable, then evaluate it. e.g. if the
 		// result has a GroundedPredicateNode, we need to run it now.
-		// We do, however, ignore the reulsting TV, which is also
+		// We do, however, ignore the resulting TV, which is also
 		// awkward.  I'm confused about how to handle this best.
 		// The behavior tree uses this!
 		// Anyway, do_evaluate() will throw if rex is not evaluatable.
@@ -153,16 +154,16 @@ Handle Instantiator::walk_tree(const Handle& expr)
 			for (const Handle& plo : slp->getOutgoingSet())
 			{
 				try {
-					EvaluationLink::do_evaluate(_as, plo);
+					EvaluationLink::do_evaluate(_as, plo, true);
 				}
-				catch (...) {}
+				catch (const NotEvaluatableException& ex) {}
 			}
 			return rex;
 		}
 		try {
-			EvaluationLink::do_evaluate(_as, rex);
+			EvaluationLink::do_evaluate(_as, rex, true);
 		}
-		catch (...) {}
+		catch (const NotEvaluatableException& ex) {}
 		return rex;
 	}
 
@@ -207,22 +208,6 @@ Handle Instantiator::walk_tree(const Handle& expr)
 		return eolp->execute(_as);
 	}
 
-	// FoldLink's cannot be handled by the factory below, due to
-	// ciruclar shared library dependencies. Yuck. Something better
-	// than a factory needs to be invented.
-	if (classserver().isA(t, FOLD_LINK))
-	{
-		// At this time, no FoldLink ever has a variable declaration,
-		// and the number of arguments is not fixed, i.e. variadic.
-		// Perform substitution on all arguments before applying the
-		// function itself.
-		HandleSeq oset_results;
-		walk_tree(oset_results, lexpr->getOutgoingSet());
-		Handle hl(FoldLink::factory(t, oset_results));
-		FoldLinkPtr flp(FoldLinkCast(hl));
-		return flp->execute(_as);
-	}
-
 	// Handle DeleteLink's before general FunctionLink's; they
 	// work differently.
 	if (DELETE_LINK == t)
@@ -238,10 +223,26 @@ Handle Instantiator::walk_tree(const Handle& expr)
 		return Handle::UNDEFINED;
 	}
 
+	// FoldLink's are a kind-of FunctionLink, but are not currently
+	// handled by the FunctionLink factory below.  This should be fixed
+	// someday, when the reduct directory is re-desiged.
+	if (classserver().isA(t, FOLD_LINK))
+	{
+		// At this time, no FoldLink ever has a variable declaration,
+		// and the number of arguments is not fixed, i.e. variadic.
+		// Perform substitution on all arguments before applying the
+		// function itself.
+		HandleSeq oset_results;
+		walk_tree(oset_results, lexpr->getOutgoingSet());
+		Handle hl(FoldLink::factory(t, oset_results));
+		FoldLinkPtr flp(FoldLinkCast(hl));
+		return flp->execute(_as);
+	}
+
 	// Fire any other function links, not handled above.
 	if (classserver().isA(t, FUNCTION_LINK))
 	{
-		// At this time, no FunctionLink that is outsode of an
+		// At this time, no FunctionLink that is outside of an
 		// ExecutionOutputLink ever has a variable declaration.
 		// Also, the number of arguments is not fixed, i.e. variadic.
 		// Perform substitution on all arguments before applying the

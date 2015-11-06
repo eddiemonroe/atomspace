@@ -11,8 +11,10 @@ ADD_LIBRARY (atomcore SHARED
 	LambdaLink.cc
 	PutLink.cc
 	RandomChoice.cc
+	RandomNumber.cc
 	ScopeLink.cc
 	StateLink.cc
+	TimeLink.cc
 	UniqueLink.cc
 	Variables.cc
 	VariableList.cc
@@ -38,8 +40,10 @@ INSTALL (FILES
 	LambdaLink.h
 	PutLink.h
 	RandomChoice.h
+	RandomNumber.h
 	ScopeLink.h
 	StateLink.h
+	TimeLink.h
 	UniqueLink.h
 	Variables.h
 	VariableList.h
