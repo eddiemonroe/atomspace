@@ -24,6 +24,7 @@
 #include <opencog/guile/SchemeEval.h>
 #include <opencog/guile/SchemeSmob.h>
 #include <opencog/atomspace/AtomSpace.h>
+#include <opencog/atoms/execution/Instantiator.h>
 #include <opencog/query/BindLinkAPI.h>
 #include <opencog/util/Config.h>
 #include <opencog/util/Logger.h>
@@ -177,10 +178,10 @@ void ArcanaUTest::test_numeric(void)
     load_scm_files_from_config(*as);
 
     // ----
-    eval->eval_h(
-        "(cog-execute! (StateLink"
-        "     (SchemaNode \"start-interaction-timestamp\")"
-        "     (TimeLink)))");
+    Handle sl = eval->eval_h("(StateLink"
+                             "   (SchemaNode \"start-interaction-timestamp\")"
+                             "   (TimeLink))");
+    Instantiator(as).execute(sl);
   
     TruthValuePtr too_soon = eval->eval_tv(
         "(cog-evaluate! (DefinedPredicateNode \"Time to change expression\"))");
