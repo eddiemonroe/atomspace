@@ -1,5 +1,5 @@
 name:                opencog-atomspace
-version:             0.1.0.0
+version:             0.1.0.2
 synopsis:            Haskell Bindings for the AtomSpace.
 description:         This library defines Haskell Bindings for the AtomSpace.
                      .
@@ -30,8 +30,9 @@ library
                    , OpenCog.AtomSpace.Types
                    , OpenCog.AtomSpace.Query
                    , OpenCog.AtomSpace.Utils
+                   , OpenCog.AtomSpace.CUtils
 
-  build-depends:     base             >=4.5
+  build-depends:     base             >=4.5 && < 5
                    , transformers     >=0.3
                    , template-haskell >=2.9.0.0
                    , containers       >=0.5.5.1
